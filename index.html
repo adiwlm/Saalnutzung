@@ -120,6 +120,39 @@
       /* Kalender bewusst breiter als Display */
       #calendar{ min-width: 980px; }
     }
+      /* Toolbar auf Mobile untereinander statt nebeneinander */
+  .fc .fc-header-toolbar{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Alle Toolbar-Chunks zentrieren */
+  .fc .fc-header-toolbar .fc-toolbar-chunk{
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* Reihenfolge: 1) View-Switches, 2) Titel, 3) Prev/Next */
+  .fc .fc-header-toolbar .fc-toolbar-chunk:nth-child(3){ order: 1; } /* right: dayGridMonth,timeGridWeek,timeGridDay */
+  .fc .fc-header-toolbar .fc-toolbar-chunk:nth-child(2){ order: 2; } /* center: title */
+  .fc .fc-header-toolbar .fc-toolbar-chunk:nth-child(1){ order: 3; } /* left: prev,next */
+
+  /* Monat/Jahr kleiner machen */
+  .fc .fc-toolbar-title{
+    font-size: 1rem;   /* ~16px */
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  /* Buttons etwas kompakter */
+  .fc .fc-button{
+    padding: 0.35rem 0.55rem;
+    font-size: 0.85rem;
+  }
+}
   </style>
 </head>
 
