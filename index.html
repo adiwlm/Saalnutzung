@@ -426,16 +426,16 @@
         nowIndicator: true,
 
         headerToolbar: {
-          buttonText: {
-            dayGridMonth: 'Monat',
-            timeGridWeek: 'Woche',
-            timeGridDay: 'Tag'
-          },
           left: 'prev,next',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
 
+         buttonText: {
+            dayGridMonth: 'Monat',
+            timeGridWeek: 'Woche',
+            timeGridDay: 'Tag'
+          },
         // Mobile: Uhrzeit in allen Views aus (Desktop behält Uhrzeit)
         views: isMobile ? {
           dayGridMonth: { displayEventTime: false },
