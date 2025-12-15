@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Königreichsaal Darmstadt</title>
+  <title>Königreichssaal Darmstadt</title>
 
   <!-- FullCalendar (CDN) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css">
@@ -61,27 +61,16 @@
     .rowtitle { font-weight:700; }
     .footer { color: var(--muted); font-size: 12px; margin-top: 10px; }
 
-    /* ==============================
-       FullCalendar: Desktop 2 Zeilen, Mobile optimiert (Titelanfang sichtbar)
-       ============================== */
-
-    /* Default (Mobile-first): kompakt, 1 Zeile */
-    .fc .fc-daygrid-event {
-      white-space: nowrap !important;
-      align-items: center;
-    }
+    /* FullCalendar: Desktop 2 Zeilen, Mobile 1 Zeile */
+    .fc .fc-daygrid-event { white-space: nowrap !important; align-items: center; }
     .fc .fc-daygrid-event .fc-event-title {
       white-space: nowrap !important;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    /* Ab Tablet/Desktop: max. 2 Zeilen */
     @media (min-width: 900px) {
-      .fc .fc-daygrid-event {
-        white-space: normal !important;
-        align-items: flex-start;
-      }
+      .fc .fc-daygrid-event { white-space: normal !important; align-items: flex-start; }
       .fc .fc-daygrid-event .fc-event-title {
         white-space: normal !important;
         line-height: 1.25;
@@ -98,15 +87,13 @@
       h1 { font-size: 16px; }
       .seg button { padding: 6px 10px; }
 
-      /* blauen Punkt entfernen */
       .fc .fc-daygrid-event-dot { display: none !important; }
 
-      /* Uhrzeit überall ausblenden (als Fallback, JS macht's zusätzlich) */
+      /* Zeit überall weg (Fallback, JS macht's zusätzlich) */
       .fc .fc-event-time,
       .fc .fc-daygrid-event-time,
       .fc .fc-list-event-time { display: none !important; }
 
-      /* Titel bekommt sicher Platz und zeigt den Anfang */
       .fc .fc-daygrid-event .fc-event-main,
       .fc .fc-timegrid-event .fc-event-main {
         display: flex;
@@ -121,23 +108,18 @@
         text-overflow: ellipsis;
         white-space: nowrap !important;
       }
+
+      /* Horizontal scroll container */
+      #calendarWrap{
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+        padding-bottom: 6px;
+      }
+      /* Kalender bewusst breiter als Display */
+      #calendar{ min-width: 980px; }
     }
-    @media (max-width: 700px){
-  /* Horizontal scroll container */
-  #calendarWrap{
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
-    padding-bottom: 6px; /* bisschen Platz für Scrollbar */
-  }
-
-  /* Kalender bewusst breiter als Display */
-  #calendar{
-    min-width: 980px; /* <- Stellschraube: 900-1100px je nach Geschmack */
-  }
-}
-
   </style>
 </head>
 
@@ -156,10 +138,9 @@
   <div id="status" class="card" style="display:none;"></div>
 
   <section id="viewCalendar" class="card">
-   <div id="calendarWrap">
-  <div id="calendar"></div>
-</div>
-
+    <div id="calendarWrap">
+      <div id="calendar"></div>
+    </div>
     <p class="hint">Bereitgestellt durch das IK.</p>
   </section>
 
@@ -278,14 +259,14 @@
     }));
   }
 
-  // Saal überall aus Titel entfernen; Mobile zusätzlich "(Schließdienst)" aus Titel entfernen
+  // Saal NICHT im Titel (nirgendwo). Mobile: "(Schließdienst)" raus.
   function buildCalendarEvents(raw) {
     const isMobile = window.matchMedia('(max-width: 700px)').matches;
 
     return raw
       .filter(e => e.start)
       .map(e => {
-        const fullTitle = toDisplayTitle(e); // z.B. "ZK DA-Russisch (Schließdienst)"
+        const fullTitle = toDisplayTitle(e);
         const mobileTitle = fullTitle.replace(/\s*\(Schließdienst\)\s*/i, '').trim();
 
         return {
@@ -370,6 +351,15 @@
     }
   }
 
+  function centerMobileCalendar() {
+    const wrap = document.getElementById('calendarWrap');
+    if (wrap && window.matchMedia('(max-width: 700px)').matches) {
+      requestAnimationFrame(() => {
+        wrap.scrollLeft = (wrap.scrollWidth - wrap.clientWidth) / 2;
+      });
+    }
+  }
+
   async function init() {
     try {
       const isMobile = window.matchMedia('(max-width: 700px)').matches;
@@ -389,7 +379,7 @@
           right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
 
-        // Mobile: Uhrzeit in allen Views aus
+        // Mobile: Uhrzeit in allen Views aus (Desktop behält Uhrzeit)
         views: isMobile ? {
           dayGridMonth: { displayEventTime: false },
           timeGridWeek: { displayEventTime: false },
@@ -399,15 +389,11 @@
         eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
 
         events: buildCalendarEvents(allEventsRaw),
-        
+
+        // Nach Monatswechsel zentrieren
         datesSet: function() {
-        const wrap = document.getElementById('calendarWrap');
-        if (wrap && window.matchMedia('(max-width: 700px)').matches) {
-          requestAnimationFrame(() => {
-            wrap.scrollLeft = (wrap.scrollWidth - wrap.clientWidth) / 2;
-          });
-        }
-      },
+          centerMobileCalendar();
+        },
 
         eventClick: function(info) {
           const e = info.event.extendedProps || {};
@@ -424,19 +410,12 @@
       });
 
       calendar.render();
+      centerMobileCalendar();
 
-/* 🔹 Mobile: Kalender horizontal in die Mitte scrollen */
-const wrap = document.getElementById('calendarWrap');
-if (wrap && window.matchMedia('(max-width: 700px)').matches) {
-  requestAnimationFrame(() => {
-    wrap.scrollLeft = (wrap.scrollWidth - wrap.clientWidth) / 2;
-  });
-}
-
-} catch (err) {
-  showStatus('error', `Fehler: ${safeText(err.message || err)}`);
-}
-
+    } catch (err) {
+      showStatus('error', `Fehler: ${safeText(err.message || err)}`);
+    }
+  }
 
   // ---------- UI wiring ----------
   $('btnCal').addEventListener('click', () => setView('cal'));
@@ -448,6 +427,7 @@ if (wrap && window.matchMedia('(max-width: 700px)').matches) {
       calendar.removeAllEvents();
       calendar.addEventSource(buildCalendarEvents(allEventsRaw));
       renderList(allEventsRaw);
+      centerMobileCalendar();
     } catch (err) {
       showStatus('error', `Fehler beim Neuladen: ${safeText(err.message || err)}`);
     }
