@@ -466,24 +466,33 @@
  function colorsForEvent(e) {
   const name = (e.versammlung || 'unbekannt').trim().toLowerCase();
 
-  // stabiler Hue
-  const hBase = hashToHue(name);
-  const hue = (hBase * 137.508) % 360;
+  // 🎨 Seriöse, kuratierte Farbslots (Enterprise-tauglich)
+  const palette = [
+    { h: 210, s: 38, l: 88 }, // Blau
+    { h: 150, s: 34, l: 86 }, // Grün
+    { h: 35,  s: 42, l: 88 }, // Ocker
+    { h: 270, s: 30, l: 90 }, // Violett
+    { h: 5,   s: 40, l: 90 }, // Ziegel
+    { h: 195, s: 36, l: 86 }, // Petrol
+    { h: 120, s: 30, l: 88 }, // Salbei
+    { h: 330, s: 32, l: 90 }, // Rosé (sehr dezent)
+    { h: 60,  s: 40, l: 88 }, // Gelb
+    { h: 245, s: 32, l: 86 }, // Indigo
+    { h: 170, s: 34, l: 88 }, // Mint
+    { h: 20,  s: 38, l: 90 }  // Sand
+  ];
 
-  // ✅ Seriöser Look: weniger “Candy”
-  // leichte Variation über Hash, aber in einem ruhigen Spektrum
-  const variant = (hBase >>> 7) % 3;        // 0..2
-  const s = [38, 44, 34][variant];          // weniger Sättigung
-  const l = [88, 84, 90][variant];          // hell, aber nicht knallig
+  // stabiler Index aus Hash
+  const hash = hashToHue(name);
+  const slot = palette[hash % palette.length];
 
-  const text = pickTextColorForHsl(hue, s, l);
-  const bg = `hsl(${hue} ${s}% ${l}%)`;
-
-  // etwas dunklerer Rand für “clean” Kante
-  const border = `hsl(${hue} ${Math.min(70, s + 8)}% ${Math.max(35, l - 22)}%)`;
+  const bg = `hsl(${slot.h} ${slot.s}% ${slot.l}%)`;
+  const border = `hsl(${slot.h} ${Math.min(65, slot.s + 8)}% ${Math.max(32, slot.l - 26)}%)`;
+  const text = pickTextColorForHsl(slot.h, slot.s, slot.l);
 
   return { bg, text, border };
 }
+
 
 
 
