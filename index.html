@@ -9,58 +9,85 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css">
 
   <style>
-    :root { --bg:#f5f7fb; --card:#ffffff; --text:#0f172a; --muted:#475569; --line:#e2e8f0; }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
-    header {
-      position: sticky; top: 0; z-index: 10;
-      background: rgba(245,247,251,.9); backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--line);
-    }
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 14px 16px; }
-    .topbar { display:flex; gap:12px; align-items:center; justify-content:space-between; }
-    h1 { font-size: 18px; margin: 0; letter-spacing: .2px; }
-    .seg {
-      display:inline-flex; background: var(--card);
-      border:1px solid var(--line); border-radius: 12px; padding: 4px;
-      box-shadow: 0 1px 10px rgba(15,23,42,.04);
-    }
-    .seg button{
-      border:0; background:transparent; padding: 8px 12px; border-radius: 10px;
-      cursor:pointer; font-weight: 600; color: var(--muted);
-    }
-    .seg button.active{ background: var(--bg); color: var(--text); }
-    main .card{
-      background: var(--card); border:1px solid var(--line); border-radius: 16px;
-      box-shadow: 0 1px 16px rgba(15,23,42,.06);
-      padding: 14px; margin-top: 14px;
-    }
-    .hint { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
-    .error { padding: 12px; border-radius: 12px; border:1px solid #fecaca; background:#fff1f2; color:#9f1239; }
-    .toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-bottom: 10px; }
-    .search { flex: 1; min-width: 240px; }
-    .search input{
-      width: 100%; padding: 10px 12px; border-radius: 12px;
-      border:1px solid var(--line); outline:none;
-    }
-    .pill {
-      font-size: 12px; color: var(--muted);
-      border:1px solid var(--line); background: var(--bg);
-      padding: 6px 10px; border-radius: 999px;
-      white-space: nowrap;
-    }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-    th { text-align:left; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-    td .small { display:block; color: var(--muted); font-size: 12px; margin-top: 2px; }
-    .badge {
-      display:inline-block; font-size: 12px; padding: 2px 8px;
-      border-radius: 999px; border:1px solid var(--line); background: var(--bg);
-      color: var(--muted);
-    }
-    .rowtitle { font-weight:700; }
-    .footer { color: var(--muted); font-size: 12px; margin-top: 10px; }
-  </style>
+  :root { --bg:#f5f7fb; --card:#ffffff; --text:#0f172a; --muted:#475569; --line:#e2e8f0; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(245,247,251,.9); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 14px 16px; }
+  .topbar { display:flex; gap:12px; align-items:center; justify-content:space-between; }
+  h1 { font-size: 18px; margin: 0; letter-spacing: .2px; }
+  .seg {
+    display:inline-flex; background: var(--card);
+    border:1px solid var(--line); border-radius: 12px; padding: 4px;
+    box-shadow: 0 1px 10px rgba(15,23,42,.04);
+  }
+  .seg button{
+    border:0; background:transparent; padding: 8px 12px; border-radius: 10px;
+    cursor:pointer; font-weight: 600; color: var(--muted);
+  }
+  .seg button.active{ background: var(--bg); color: var(--text); }
+  main .card{
+    background: var(--card); border:1px solid var(--line); border-radius: 16px;
+    box-shadow: 0 1px 16px rgba(15,23,42,.06);
+    padding: 14px; margin-top: 14px;
+  }
+  .hint { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
+  .error { padding: 12px; border-radius: 12px; border:1px solid #fecaca; background:#fff1f2; color:#9f1239; }
+  .toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-bottom: 10px; }
+  .search { flex: 1; min-width: 240px; }
+  .search input{
+    width: 100%; padding: 10px 12px; border-radius: 12px;
+    border:1px solid var(--line); outline:none;
+  }
+  .pill {
+    font-size: 12px; color: var(--muted);
+    border:1px solid var(--line); background: var(--bg);
+    padding: 6px 10px; border-radius: 999px;
+    white-space: nowrap;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { text-align:left; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  td .small { display:block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .badge {
+    display:inline-block; font-size: 12px; padding: 2px 8px;
+    border-radius: 999px; border:1px solid var(--line); background: var(--bg);
+    color: var(--muted);
+  }
+  .rowtitle { font-weight:700; }
+  .footer { color: var(--muted); font-size: 12px; margin-top: 10px; }
+
+  /* ==============================
+     FullCalendar: max. 2 Zeilen
+     ============================== */
+
+  /* Zeilenumbruch erlauben */
+  .fc .fc-daygrid-event {
+    white-space: normal !important;
+    align-items: flex-start;
+  }
+
+  /* Titel auf max. 2 Zeilen begrenzen */
+  .fc .fc-daygrid-event .fc-event-title {
+    white-space: normal !important;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;        /* 🔑 genau 2 Zeilen */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* etwas Abstand zwischen Uhrzeit und Text */
+  .fc .fc-daygrid-event .fc-event-time {
+    margin-right: 4px;
+    font-weight: 600;
+  }
+</style>
+
 </head>
 
 <body>
@@ -69,7 +96,7 @@
     <h1>Königreichsaal Darmstadt</h1>
     <div class="seg" role="tablist" aria-label="Ansicht">
       <button id="btnCal" class="active" type="button">Kalender</button>
-      <button id="btnList" type="button">Liste (Schließdienst)</button>
+      <button id="btnList" type="button">Schließdienst</button>
     </div>
   </div>
 </header>
@@ -79,7 +106,7 @@
 
   <section id="viewCalendar" class="card">
     <div id="calendar"></div>
-    <p class="hint">Kalender zeigt <b>alle</b> Termine aus <code>events.json</code>.</p>
+    <p class="hint">Bereitgestellt durch das IK</code>.</p>
   </section>
 
   <section id="viewList" class="card" style="display:none;">
@@ -104,7 +131,7 @@
     </div>
 
     <div class="footer">
-      Liste zeigt <b>nur</b> Termine mit <code>schliessdienst</code> gesetzt – und als Versammlung <b>ohne</b> „ZK/TP…“.
+      Bereitgestellt durch das IK
     </div>
   </section>
 </main>
