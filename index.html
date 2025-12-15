@@ -231,11 +231,26 @@
   }
 
   /* ============================== Schließdienst: zusätzliche Hervorhebung ============================== */
-  .fc .fc-event.sd-event{
-    box-shadow:
-      inset 0 0 0 2px rgba(255,255,255,.55),
-      0 1px 0 rgba(15,23,42,.08);
-  }
+.fc .fc-event.sd-event{
+  position: relative;
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.55),
+    0 1px 0 rgba(15,23,42,.08);
+  border-width: 2px !important;
+}
+
+.fc .fc-event.sd-event::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: inherit;
+  pointer-events:none;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,.28) 0 7px,
+    rgba(255,255,255,0) 7px 14px
+  );
+}
   
   /* ================= Mobile Optimierungen ================= */
 
@@ -440,24 +455,27 @@
     return e && e.schliessdienst !== null && e.schliessdienst !== undefined && String(e.schliessdienst).trim() !== '';
   }
 
-  function colorsForEvent(e) {
-    const name = (e.versammlung || 'unbekannt').trim().toLowerCase();
-    const hue = hashToHue(name);
+ function colorsForEvent(e) {
+  const name = (e.versammlung || 'unbekannt').trim().toLowerCase();
 
-    const isSD = isSchliessdienst(e);
+  // Stabiler & besser verteilt als "hash % 360"
+  const hBase = hashToHue(name);
+  const hue = (hBase * 137.508) % 360; // golden angle distribution
 
-    // Normal: pastellhell
-    let s = 70;
-    let l = 86;
+  // Variante aus Hash ableiten -> mehr Abstand auch bei ähnlichen Hues
+  const variant = (hBase >>> 8) % 3; // 0..2
+  const s = [72, 82, 62][variant];   // Sättigung
+  const l = [86, 78, 90][variant];   // Helligkeit
 
-    // Schließdienst: etwas kräftiger/kontrastreicher
-    if (isSD) { s = 85; l = 55; }
+  const text = pickTextColorForHsl(hue, s, l);
+  const bg = `hsl(${hue} ${s}% ${l}%)`;
 
-    const text = pickTextColorForHsl(hue, s, l);
-    const bg = `hsl(${hue} ${s}% ${l}%)`;
+  // border etwas dunkler für bessere Kanten
+  const border = `hsl(${hue} ${Math.min(95, s + 10)}% ${Math.max(35, l - 18)}%)`;
 
-    return { bg, text, border: bg };
-  }
+  return { bg, text, border };
+}
+
 
   function colorForVersammlung(name) {
     const base = (name || '').trim().toLowerCase();
