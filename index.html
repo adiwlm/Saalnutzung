@@ -17,7 +17,7 @@
     background: rgba(245,247,251,.9); backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--line);
   }
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 14px 16px; }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 14px 16px; }
   .topbar { display:flex; gap:12px; align-items:center; justify-content:space-between; }
   h1 { font-size: 18px; margin: 0; letter-spacing: .2px; }
   .seg {
@@ -61,31 +61,45 @@
   .rowtitle { font-weight:700; }
   .footer { color: var(--muted); font-size: 12px; margin-top: 10px; }
 
-  /* ==============================
-     FullCalendar: max. 2 Zeilen
-     ============================== */
+/* ==============================
+   FullCalendar: Mobile 1 Zeile, Desktop 2 Zeilen
+   ============================== */
 
-  /* Zeilenumbruch erlauben */
+/* Mobile-first: kompakt, 1 Zeile */
+.fc .fc-daygrid-event {
+  white-space: nowrap !important;
+  align-items: center;
+}
+
+.fc .fc-daygrid-event .fc-event-title {
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Uhrzeit etwas kompakter */
+.fc .fc-daygrid-event .fc-event-time {
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+/* Ab Tablet/Desktop: max. 2 Zeilen */
+@media (min-width: 900px) {
   .fc .fc-daygrid-event {
     white-space: normal !important;
     align-items: flex-start;
   }
 
-  /* Titel auf max. 2 Zeilen begrenzen */
   .fc .fc-daygrid-event .fc-event-title {
     white-space: normal !important;
     line-height: 1.25;
     display: -webkit-box;
-    -webkit-line-clamp: 2;        /* 🔑 genau 2 Zeilen */
+    -webkit-line-clamp: 2;   /* genau 2 Zeilen */
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+}
 
-  /* etwas Abstand zwischen Uhrzeit und Text */
-  .fc .fc-daygrid-event .fc-event-time {
-    margin-right: 4px;
-    font-weight: 600;
-  }
 </style>
 
 </head>
@@ -93,7 +107,7 @@
 <body>
 <header>
   <div class="wrap topbar">
-    <h1>Königreichsaal Darmstadt</h1>
+    <h1>Königreichssaal Darmstadt</h1>
     <div class="seg" role="tablist" aria-label="Ansicht">
       <button id="btnCal" class="active" type="button">Kalender</button>
       <button id="btnList" type="button">Schließdienst</button>
@@ -243,18 +257,34 @@
 
   }
 
-  function buildCalendarEvents(raw) {
-    // FullCalendar Event-Objekte
-    return raw
-      .filter(e => e.start) // ohne Start macht’s keinen Sinn
-      .map(e => ({
+function buildCalendarEvents(raw) {
+  const isMobile = window.matchMedia('(max-width: 700px)').matches;
+
+  return raw
+    .filter(e => e.start) // ohne Start macht’s keinen Sinn
+    .map(e => {
+      const fullTitle = toDisplayTitle(e); // z.B. "ZK DA-Russisch (Schließdienst)"
+
+      // Mobile: Titel kürzen
+      let mobileTitle = fullTitle
+        .replace(/\s*\(Schließdienst\)\s*/i, '') // "(Schließdienst)" entfernen
+        .trim();
+
+      return {
         id: e.id ? String(e.id) : undefined,
-        title: toDisplayTitle(e) + (e.saal ? ` (${e.saal})` : ''),
+
+        // 👉 Mobile kompakt, Desktop ausführlich
+        title: isMobile
+          ? mobileTitle
+          : fullTitle + (e.saal ? ` (${e.saal})` : ''),
+
         start: e.start,
         end: e.end || null,
         extendedProps: e
-      }));
-  }
+      };
+    });
+}
+
 
   function renderList(raw) {
   const q = $('search').value.trim().toLowerCase();
