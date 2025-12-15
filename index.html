@@ -83,6 +83,7 @@
 
     /* Mobile: Punkt weg, Zeit weg, Titelanfang erzwingen */
     @media (max-width: 700px){
+      #calendarWrap { overscroll-behavior: auto;
       .wrap { padding: 10px 12px; }
       h1 { font-size: 16px; }
       .seg button { padding: 6px 10px; }
@@ -111,12 +112,12 @@
 
       /* Horizontal scroll container */
       #calendarWrap{
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        touch-action: pan-x;
-        padding-bottom: 6px;
-      }
+  overflow-x: auto;
+  overflow-y: visible;              /* wichtig */
+  -webkit-overflow-scrolling: touch;
+  touch-action: auto;        
+  padding-bottom: 6px;
+}
       /* Kalender bewusst breiter als Display */
       #calendar{ min-width: 980px; }
     }
