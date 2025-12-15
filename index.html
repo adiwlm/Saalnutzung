@@ -60,9 +60,6 @@
     }
     .rowtitle { font-weight:700; }
     .footer { color: var(--muted); font-size: 12px; margin-top: 10px; }
-    @media (max-width: 700px){
-      th:nth-child(4), td:nth-child(4) { display:none; } /* Endzeit ausblenden mobil */
-    }
   </style>
 </head>
 
@@ -88,7 +85,7 @@
   <section id="viewList" class="card" style="display:none;">
     <div class="toolbar">
       <div class="search">
-        <input id="search" type="search" placeholder="Suche (Versammlung/Saal/Datum) …" />
+        <input id="search" type="search" placeholder="Suche (Versammlung/Datum) …" />
       </div>
       <span id="countPill" class="pill">0 Schließdienst-Termine</span>
       <button id="btnRefresh" type="button" class="pill" style="cursor:pointer;">Neu laden</button>
@@ -100,8 +97,6 @@
           <tr>
             <th>Datum</th>
             <th>Versammlung</th>
-            <th>Saal</th>
-            <th>Zeitraum</th>
           </tr>
         </thead>
         <tbody id="listBody"></tbody>
@@ -109,7 +104,7 @@
     </div>
 
     <div class="footer">
-      Liste zeigt <b>nur</b> Termine mit <code>schliessdienst</code> gesetzt.
+      Liste zeigt <b>nur</b> Termine mit <code>schliessdienst</code> gesetzt – und als Versammlung <b>ohne</b> „ZK/TP…“.
     </div>
   </section>
 </main>
@@ -148,8 +143,8 @@
   }
 
   function toDisplayTitle(e) {
-    // Bei dir ist "title" teilweise null -> fallback auf "raum" oder "versammlung" (falls vorhanden)
-    return safeText(e.title || e.raum || e.versammlung || e.titel || e.name || 'Termin');
+    // Kalender: bevorzugt "title" (aus Flow: z.B. "ZK DA-Russisch"), fallback auf versammlung
+    return safeText(e.title || e.titel || e.versammlung || e.raum || e.name || 'Termin');
   }
 
   function formatDateTime(iso) {
@@ -195,7 +190,11 @@
       end: e.end ?? e.Enddatum ?? e.enddatum ?? null,
       saal: e.saal ?? e.Saal ?? null,
       schliessdienst: e.schliessdienst ?? e.Schliessdienst ?? null,
-      raum: e.raum ?? e.Versammlung ?? e.versammlung ?? null,
+      // "versammlung" kommt idealerweise aus dem Flow als eigenes Feld:
+      versammlung: e.versammlung ?? e.Versammlung ?? (e.Versammlung && e.Versammlung.Value) ?? null,
+      // fallback/alt:
+      raum: e.raum ?? e.Raum ?? null,
+      ereignisart: e.ereignisart ?? e.Ereignisart ?? (e.Ereignisart && e.Ereignisart.Value) ?? null,
       id: e.id ?? e.ID ?? null
     }));
   }
@@ -223,10 +222,8 @@
         if (!q) return true;
         const hay = [
           formatDateOnly(e.start),
-          formatDateTime(e.start),
-          toDisplayTitle(e),
-          safeText(e.saal),
-          safeText(e.raum),
+          safeText(e.versammlung),        // Liste soll auf Versammlung suchen
+          safeText(e.title),              // optional: Suche findet auch "ZK ..."
           safeText(e.schliessdienst)
         ].join(' ').toLowerCase();
         return hay.includes(q);
@@ -236,28 +233,22 @@
 
     const tbody = $('listBody');
     if (rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="color:var(--muted); padding:14px;">Keine Treffer.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="2" style="color:var(--muted); padding:14px;">Keine Treffer.</td></tr>`;
       return;
     }
 
     tbody.innerHTML = rows.map(e => {
       const datum = formatDateOnly(e.start);
-      const vers = toDisplayTitle(e);
-      const saal = safeText(e.saal) || '—';
-      const zeitraum = `${formatDateTime(e.start)}${e.end ? ' – ' + formatDateTime(e.end) : ''}`;
+      // WICHTIG: Liste zeigt nur die Versammlung (ohne "ZK/TP …")
+      const vers = safeText(e.versammlung) || toDisplayTitle(e);
 
       return `
         <tr>
           <td>
             <span class="rowtitle">${datum}</span>
-            <span class="small">${isSchliessdienst(e) ? '<span class="badge">Schließdienst</span>' : ''}</span>
+            <span class="small"><span class="badge">Schließdienst</span></span>
           </td>
-          <td>
-            <span class="rowtitle">${vers}</span>
-            ${e.raum && e.raum !== vers ? `<span class="small">${safeText(e.raum)}</span>` : ''}
-          </td>
-          <td>${saal}</td>
-          <td>${zeitraum}</td>
+          <td><span class="rowtitle">${vers}</span></td>
         </tr>
       `;
     }).join('');
@@ -308,7 +299,8 @@
           const title = toDisplayTitle(e);
           const msg =
             `${title}\n` +
-            (e.saal ? `Saal: ${e.saal}\n` : '') +
+            (e.versammlung ? `Versammlung: ${safeText(e.versammlung)}\n` : '') +
+            (e.saal ? `Saal: ${safeText(e.saal)}\n` : '') +
             `Start: ${formatDateTime(e.start)}\n` +
             (e.end ? `Ende: ${formatDateTime(e.end)}\n` : '') +
             (isSchliessdienst(e) ? `Schließdienst: Ja\n` : `Schließdienst: Nein\n`);
