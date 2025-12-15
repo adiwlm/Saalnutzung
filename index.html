@@ -125,6 +125,15 @@
     el.style.display = 'none';
     el.innerHTML = '';
   }
+    function choiceValue(v) {
+      if (v === null || v === undefined) return null;
+      if (Array.isArray(v)) return v.map(choiceValue).filter(Boolean).join(', ');
+      if (typeof v === 'object') {
+        if ('Value' in v) return v.Value;
+        if ('value' in v) return v.value;
+      }
+      return String(v);
+    }
 
   function safeText(v) {
     if (v === null || v === undefined) return '';
@@ -184,19 +193,27 @@
 
     // Normalisieren
     return arr.map(e => ({
-      ...e,
-      title: e.title ?? e.titel ?? null,
-      start: e.start ?? e.Startdatum ?? e.startdatum ?? null,
-      end: e.end ?? e.Enddatum ?? e.enddatum ?? null,
-      saal: e.saal ?? e.Saal ?? null,
-      schliessdienst: e.schliessdienst ?? e.Schliessdienst ?? null,
-      // "versammlung" kommt idealerweise aus dem Flow als eigenes Feld:
-      versammlung: e.versammlung ?? e.Versammlung ?? (e.Versammlung && e.Versammlung.Value) ?? null,
-      // fallback/alt:
-      raum: e.raum ?? e.Raum ?? null,
-      ereignisart: e.ereignisart ?? e.Ereignisart ?? (e.Ereignisart && e.Ereignisart.Value) ?? null,
-      id: e.id ?? e.ID ?? null
-    }));
+  ...e,
+  // WICHTIG: SharePoint "Title" hat großes T
+  title: e.title ?? e.Title ?? e.titel ?? e.Titel ?? null,
+
+  start: e.start ?? e.Startdatum ?? e.startdatum ?? null,
+  end: e.end ?? e.Enddatum ?? e.enddatum ?? null,
+
+  saal: choiceValue(e.saal ?? e.Saal) ?? null,
+
+  // Versammlung (Choice) – egal ob als Objekt {Value:..} oder als String
+  versammlung: choiceValue(e.versammlung ?? e.Versammlung) ?? null,
+
+  // optional, falls du es später brauchst
+  ereignisart: choiceValue(e.ereignisart ?? e.Ereignisart) ?? null,
+
+  schliessdienst: e.schliessdienst ?? e.Schliessdienst ?? null,
+
+  raum: e.raum ?? e.Raum ?? null,
+  id: e.id ?? e.ID ?? null
+}));
+
   }
 
   function buildCalendarEvents(raw) {
