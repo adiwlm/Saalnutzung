@@ -368,6 +368,26 @@
   // ---------- Helpers ----------
   const $ = (id) => document.getElementById(id);
 
+  function stringToHue(str) {
+  // deterministische Farbe pro String
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+  return h % 360;
+}
+
+function colorForVersammlung(name) {
+  const base = (name || '').trim().toLowerCase();
+  const hue = stringToHue(base || 'default');
+  // angenehme Pastell-Farbe
+  return `hsl(${hue} 70% 85%)`;
+}
+
+function textColorFor(bgHsl) {
+  // sehr simpel: Pastell ist fast immer dunkel lesbar
+  return '#0f172a';
+}
+
+  
   function showStatus(type, msg) {
     const el = $('status');
     el.style.display = 'block';
@@ -453,24 +473,41 @@
   }
 
   // Saal NICHT im Titel (nirgendwo). Mobile: "(Schließdienst)" raus.
-  function buildCalendarEvents(raw) {
-    const isMobile = window.matchMedia('(max-width: 700px)').matches;
+ function buildCalendarEvents(raw) {
+  const isMobile = window.matchMedia('(max-width: 700px)').matches;
 
-    return raw
-      .filter(e => e.start)
-      .map(e => {
-        const fullTitle = toDisplayTitle(e);
-        const mobileTitle = fullTitle.replace(/\s*\(Schließdienst\)\s*/i, '').trim();
+  return raw
+    .filter(e => e.start)
+    .map(e => {
+      const fullTitle = toDisplayTitle(e);
+      const mobileTitle = fullTitle.replace(/\s*\(Schließdienst\)\s*/i, '').trim();
 
-        return {
-          id: e.id ? String(e.id) : undefined,
-          title: isMobile ? mobileTitle : fullTitle,
-          start: e.start,
-          end: e.end || null,
-          extendedProps: e
-        };
-      });
-  }
+      const vers = (e.versammlung || '').trim();
+      const bg = colorForVersammlung(vers);
+      const txt = textColorFor(bg);
+
+      return {
+        id: e.id ? String(e.id) : undefined,
+
+        // Mobile kompakt, Desktop voll
+        title: isMobile ? mobileTitle : fullTitle,
+
+        start: e.start,
+        end: e.end || null,
+
+        // ✅ Farben pro Versammlung
+        backgroundColor: bg,
+        borderColor: bg,
+        textColor: txt,
+
+        // ✅ Schließdienst markiert (CSS)
+        classNames: isSchliessdienst(e) ? ['sd-event'] : [],
+
+        extendedProps: e
+      };
+    });
+}
+
 
   function renderList(raw) {
     const q = $('search').value.trim().toLowerCase();
