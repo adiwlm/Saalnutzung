@@ -122,6 +122,22 @@
         white-space: nowrap !important;
       }
     }
+    @media (max-width: 700px){
+  /* Horizontal scroll container */
+  #calendarWrap{
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    padding-bottom: 6px; /* bisschen Platz für Scrollbar */
+  }
+
+  /* Kalender bewusst breiter als Display */
+  #calendar{
+    min-width: 980px; /* <- Stellschraube: 900-1100px je nach Geschmack */
+  }
+}
+
   </style>
 </head>
 
@@ -140,7 +156,10 @@
   <div id="status" class="card" style="display:none;"></div>
 
   <section id="viewCalendar" class="card">
-    <div id="calendar"></div>
+   <div id="calendarWrap">
+  <div id="calendar"></div>
+</div>
+
     <p class="hint">Bereitgestellt durch das IK.</p>
   </section>
 
@@ -380,6 +399,15 @@
         eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
 
         events: buildCalendarEvents(allEventsRaw),
+        
+        datesSet: function() {
+        const wrap = document.getElementById('calendarWrap');
+        if (wrap && window.matchMedia('(max-width: 700px)').matches) {
+          requestAnimationFrame(() => {
+            wrap.scrollLeft = (wrap.scrollWidth - wrap.clientWidth) / 2;
+          });
+        }
+      },
 
         eventClick: function(info) {
           const e = info.event.extendedProps || {};
@@ -397,10 +425,18 @@
 
       calendar.render();
 
-    } catch (err) {
-      showStatus('error', `Fehler: ${safeText(err.message || err)}`);
-    }
-  }
+/* 🔹 Mobile: Kalender horizontal in die Mitte scrollen */
+const wrap = document.getElementById('calendarWrap');
+if (wrap && window.matchMedia('(max-width: 700px)').matches) {
+  requestAnimationFrame(() => {
+    wrap.scrollLeft = (wrap.scrollWidth - wrap.clientWidth) / 2;
+  });
+}
+
+} catch (err) {
+  showStatus('error', `Fehler: ${safeText(err.message || err)}`);
+}
+
 
   // ---------- UI wiring ----------
   $('btnCal').addEventListener('click', () => setView('cal'));
