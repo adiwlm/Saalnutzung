@@ -2,72 +2,202 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Schließdienst</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Saalnutzung</title>
 
-  <!-- FullCalendar (inkl. list view & dayGrid) -->
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
+  <!-- FullCalendar (CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 
   <style>
-    :root { --maxw: 1100px; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; }
-    header { max-width: var(--maxw); margin: 0 auto 16px auto; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
-    header h1 { margin: 0; font-size: 22px; }
-    header .hint { color: #555; font-size: 14px; }
-    #calendar { max-width: var(--maxw); margin: 0 auto; }
+    :root { color-scheme: light; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 0; background:#f6f7fb; }
+    header { padding: 16px; background: white; border-bottom: 1px solid #e6e8ef; position: sticky; top:0; z-index: 10; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 0 12px; }
+    .row { display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+    h1 { font-size: 18px; margin: 0; }
+    .seg { display:flex; background:#f0f2f8; padding:4px; border-radius: 12px; gap:4px; }
+    .seg button { border:0; background:transparent; padding:8px 10px; border-radius: 10px; cursor:pointer; font-weight:600; }
+    .seg button.active { background:white; box-shadow: 0 1px 8px rgba(0,0,0,.06); }
 
-    /* Mobile spacing */
-    @media (max-width: 600px) {
-      body { margin: 14px; }
-      header h1 { font-size: 18px; }
+    main { padding: 16px 0 28px; }
+    .card { background:white; border:1px solid #e6e8ef; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
+    #calendar { padding: 12px; }
+    #list { padding: 8px; display:none; }
+
+    .listItem { padding: 12px; border-top: 1px solid #eef0f6; display:flex; gap:10px; align-items:flex-start; }
+    .listItem:first-child { border-top:0; }
+    .badge { font-size: 12px; font-weight:700; padding: 4px 8px; border-radius: 999px; background:#fff4f4; border:1px solid #ffd3d3; }
+    .meta { font-size: 12px; color:#60657a; margin-top: 2px; }
+    .title { font-size: 15px; font-weight: 700; margin:0; }
+    .empty { padding: 18px; color:#60657a; }
+
+    @media (max-width: 640px){
+      .row { gap:8px; }
+      h1 { font-size: 16px; }
     }
   </style>
 </head>
-
 <body>
   <header>
-    <h1>Schließdienst</h1>
-    <div class="hint">Kalender- und Listenansicht oben rechts umschalten.</div>
+    <div class="wrap">
+      <div class="row">
+        <h1>Saalnutzung</h1>
+        <div class="seg" aria-label="Ansicht wechseln">
+          <button id="btnCal" class="active" type="button">Kalender</button>
+          <button id="btnList" type="button">Liste (Schließdienst)</button>
+        </div>
+      </div>
+    </div>
   </header>
 
-  <div id="calendar"></div>
+  <main>
+    <div class="wrap">
+      <div class="card">
+        <div id="calendar"></div>
+        <div id="list"></div>
+      </div>
+    </div>
+  </main>
 
   <script>
-    // JSON muss im gleichen Repo liegen: events.json
-    // Beispiel-Inhalt: []
-    const eventsUrl = "./events.json";
+    const EVENTS_URL = "/events.json";
 
-    // Mobile: lieber Liste als Monatsgrid
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const btnCal = document.getElementById("btnCal");
+    const btnList = document.getElementById("btnList");
+    const calEl = document.getElementById("calendar");
+    const listEl = document.getElementById("list");
 
-    const calendarEl = document.getElementById("calendar");
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-      locale: "de",
-      initialView: isMobile ? "listWeek" : "dayGridMonth",
-      height: "auto",
+    const isSchliessdienst = e => (e.schliessdienst || "").toLowerCase().includes("schließdienst");
+    const safe = v => (v === null || v === undefined) ? "" : String(v);
 
-      headerToolbar: {
-        left: "prev,next today",
-        center: "title",
-        right: "dayGridMonth,listMonth,listWeek"
-      },
+    function fmtDateTime(iso){
+      if(!iso) return "";
+      const d = new Date(iso);
+      // deutsches Format
+      return new Intl.DateTimeFormat("de-DE", {
+        weekday: "short", year:"numeric", month:"2-digit", day:"2-digit",
+        hour:"2-digit", minute:"2-digit"
+      }).format(d);
+    }
 
-      // JSON-Events laden
-      events: eventsUrl,
+    function fmtDate(iso){
+      if(!iso) return "";
+      const d = new Date(iso);
+      return new Intl.DateTimeFormat("de-DE", { year:"numeric", month:"2-digit", day:"2-digit" }).format(d);
+    }
 
-      // Optional: saubere Darstellung bei Ganztagsterminen
-      displayEventTime: true,
+    function fmtTime(iso){
+      if(!iso) return "";
+      const d = new Date(iso);
+      return new Intl.DateTimeFormat("de-DE", { hour:"2-digit", minute:"2-digit" }).format(d);
+    }
 
-      // Optional: Tooltip (Browser-native title)
-      eventDidMount: function(info) {
-        const sd = info.event.extendedProps?.schliessdienst;
-        if (sd) {
-          info.el.title = `Schließdienst: ${sd}`;
-        }
+    function buildList(events){
+      // nur Schließdienst
+      const items = events
+        .filter(isSchliessdienst)
+        .sort((a,b)=> new Date(a.start) - new Date(b.start));
+
+      if(items.length === 0){
+        listEl.innerHTML = `<div class="empty">Keine Schließdienst-Einträge gefunden.</div>`;
+        return;
       }
-    });
 
-    calendar.render();
+      listEl.innerHTML = items.map(e => {
+        const versammlung = safe(e.raum) || safe(e.title) || "—";
+        const datum = fmtDate(e.start);
+        const von = fmtTime(e.start);
+        const bis = fmtTime(e.end);
+        const saal = safe(e.saal);
+
+        return `
+          <div class="listItem">
+            <div class="badge">Schließdienst</div>
+            <div style="min-width:0">
+              <p class="title">${versammlung}</p>
+              <div class="meta">
+                ${datum}${von ? `, ${von}` : ""}${bis ? `–${bis}` : ""}
+                ${saal ? ` · ${saal}` : ""}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function showCalendar(){
+      btnCal.classList.add("active");
+      btnList.classList.remove("active");
+      calEl.style.display = "block";
+      listEl.style.display = "none";
+    }
+
+    function showList(){
+      btnList.classList.add("active");
+      btnCal.classList.remove("active");
+      calEl.style.display = "none";
+      listEl.style.display = "block";
+    }
+
+    btnCal.addEventListener("click", showCalendar);
+    btnList.addEventListener("click", showList);
+
+    async function loadEvents(){
+      const res = await fetch(EVENTS_URL, { cache: "no-store" });
+      if(!res.ok) throw new Error("events.json konnte nicht geladen werden: " + res.status);
+      return await res.json();
+    }
+
+    (async () => {
+      const data = await loadEvents();
+
+      // Kalender-Events bauen
+      const fcEvents = (data || []).map(e => {
+        const titleBase = safe(e.raum) || safe(e.title) || "Termin";
+        const tag = isSchliessdienst(e) ? " (Schließdienst)" : "";
+        return {
+          title: titleBase + tag,
+          start: e.start,
+          end: e.end,
+          extendedProps: e
+        };
+      });
+
+      // Kalender
+      const calendar = new FullCalendar.Calendar(calEl, {
+        initialView: "dayGridMonth",
+        locale: "de",
+        height: "auto",
+        headerToolbar: { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,listMonth" },
+        events: fcEvents,
+        eventClick: (info) => {
+          const e = info.event.extendedProps;
+          const versammlung = safe(e.raum) || safe(e.title) || "—";
+          const saal = safe(e.saal);
+          const sd = safe(e.schliessdienst);
+          alert(
+            `${versammlung}\n` +
+            `${fmtDateTime(e.start)}${e.end ? " – " + fmtTime(e.end) : ""}\n` +
+            `${saal ? "Saal: " + saal + "\n" : ""}` +
+            `${sd ? "Schließdienst: " + sd : ""}`
+          );
+        }
+      });
+      calendar.render();
+
+      // Liste
+      buildList(data);
+
+      // Startansicht Kalender
+      showCalendar();
+    })().catch(err => {
+      console.error(err);
+      calEl.innerHTML = `<div class="empty">Fehler: ${safe(err.message)}</div>`;
+      listEl.innerHTML = `<div class="empty">Fehler: ${safe(err.message)}</div>`;
+      listEl.style.display = "block";
+      calEl.style.display = "none";
+    });
   </script>
 </body>
 </html>
