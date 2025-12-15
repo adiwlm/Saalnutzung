@@ -66,7 +66,7 @@
 <body>
 <header>
   <div class="wrap topbar">
-    <h1>Saalnutzung</h1>
+    <h1>Königreichsaal Darmstadt</h1>
     <div class="seg" role="tablist" aria-label="Ansicht">
       <button id="btnCal" class="active" type="button">Kalender</button>
       <button id="btnList" type="button">Liste (Schließdienst)</button>
@@ -230,46 +230,61 @@
   }
 
   function renderList(raw) {
-    const q = $('search').value.trim().toLowerCase();
+  const q = $('search').value.trim().toLowerCase();
 
-    const rows = raw
-      .filter(isSchliessdienst) // NUR Schließdienst
-      .sort((a,b) => new Date(a.start) - new Date(b.start))
-      .filter(e => {
-        if (!q) return true;
-        const hay = [
-          formatDateOnly(e.start),
-          safeText(e.versammlung),        // Liste soll auf Versammlung suchen
-          safeText(e.title),              // optional: Suche findet auch "ZK ..."
-          safeText(e.schliessdienst)
-        ].join(' ').toLowerCase();
-        return hay.includes(q);
-      });
+  // Heute (lokal) ab 00:00 – damit alte Termine rausfallen
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-    $('countPill').textContent = `${rows.length} Schließdienst-Termine`;
+  const rows = raw
+    .filter(isSchliessdienst) // NUR Schließdienst
+    // NUR heute + Zukunft
+    .filter(e => {
+      if (!e.start) return false;
+      const d = new Date(e.start);
+      if (isNaN(d.getTime())) return false;
+      d.setHours(0, 0, 0, 0);
+      return d >= today;
+    })
+    // nächster Termin zuerst
+    .sort((a, b) => new Date(a.start) - new Date(b.start))
+    // Suche
+    .filter(e => {
+      if (!q) return true;
+      const hay = [
+        formatDateOnly(e.start),
+        safeText(e.versammlung),
+        safeText(e.title),
+        safeText(e.schliessdienst)
+      ].join(' ').toLowerCase();
+      return hay.includes(q);
+    });
 
-    const tbody = $('listBody');
-    if (rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="2" style="color:var(--muted); padding:14px;">Keine Treffer.</td></tr>`;
-      return;
-    }
+  $('countPill').textContent = `${rows.length} Schließdienst-Termine`;
 
-    tbody.innerHTML = rows.map(e => {
-      const datum = formatDateOnly(e.start);
-      // WICHTIG: Liste zeigt nur die Versammlung (ohne "ZK/TP …")
-      const vers = safeText(e.versammlung) || toDisplayTitle(e);
-
-      return `
-        <tr>
-          <td>
-            <span class="rowtitle">${datum}</span>
-            <span class="small"><span class="badge">Schließdienst</span></span>
-          </td>
-          <td><span class="rowtitle">${vers}</span></td>
-        </tr>
-      `;
-    }).join('');
+  const tbody = $('listBody');
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="2" style="color:var(--muted); padding:14px;">Keine Treffer.</td></tr>`;
+    return;
   }
+
+  tbody.innerHTML = rows.map(e => {
+    const datum = formatDateOnly(e.start);
+    // Liste zeigt nur die Versammlung (ohne "ZK/TP …")
+    const vers = safeText(e.versammlung) || '—';
+
+    return `
+      <tr>
+        <td>
+          <span class="rowtitle">${datum}</span>
+          <span class="small"><span class="badge">Schließdienst</span></span>
+        </td>
+        <td><span class="rowtitle">${vers}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
 
   function setView(which) {
     const cal = $('viewCalendar');
