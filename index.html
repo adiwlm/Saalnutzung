@@ -259,6 +259,9 @@
   z-index: 1;
 }
 
+  .fc .fc-event.city-event{
+  background: transparent !important;
+}
   
   /* ================= Mobile Optimierungen ================= */
 
@@ -464,34 +467,46 @@
   }
 
  function colorsForEvent(e) {
-  const name = (e.versammlung || 'unbekannt').trim().toLowerCase();
+  const rawName = safeText(e.versammlung || 'unbekannt').trim();
+  const name = rawName.toLowerCase();
 
-  // 🎨 Seriöse, kuratierte Farbslots (Enterprise-tauglich)
+  // ✅ Darmstadt: weiß/neutral, nur Rahmen
+  if (name === 'darmstadt') {
+    return {
+      bg: 'transparent',
+      border: '#cbd5e1',   // dezenter Rahmen
+      text: '#0f172a'
+    };
+  }
+
+  // 🎨 Ruhige, entsättigte Palette + 2 Grautöne (weniger bunt)
   const palette = [
-    { h: 210, s: 38, l: 88 }, // Blau
-    { h: 150, s: 34, l: 86 }, // Grün
-    { h: 35,  s: 42, l: 88 }, // Ocker
-    { h: 270, s: 30, l: 90 }, // Violett
-    { h: 5,   s: 40, l: 90 }, // Ziegel
-    { h: 195, s: 36, l: 86 }, // Petrol
-    { h: 120, s: 30, l: 88 }, // Salbei
-    { h: 330, s: 32, l: 90 }, // Rosé (sehr dezent)
-    { h: 60,  s: 40, l: 88 }, // Gelb
-    { h: 245, s: 32, l: 86 }, // Indigo
-    { h: 170, s: 34, l: 88 }, // Mint
-    { h: 20,  s: 38, l: 90 }  // Sand
+    { h: 210, s: 22, l: 92 }, // Blau (sehr ruhig)
+    { h: 150, s: 20, l: 92 }, // Grün
+    { h: 35,  s: 24, l: 93 }, // Ocker
+    { h: 270, s: 18, l: 93 }, // Violett
+    { h: 195, s: 22, l: 92 }, // Petrol
+    { h: 120, s: 18, l: 93 }, // Salbei
+    { h: 245, s: 18, l: 92 }, // Indigo
+    { h: 20,  s: 22, l: 94 }, // Sand
+
+    // ✅ Grau (hell, wenig bunt)
+    { h: 210, s: 10, l: 94 }, // hellgrau-bläulich
+
+    // ✅ Grau (stärker, Text weiß)
+    { h: 215, s: 12, l: 38 }  // dunkelgrau-bläulich
   ];
 
-  // stabiler Index aus Hash
   const hash = hashToHue(name);
   const slot = palette[hash % palette.length];
 
   const bg = `hsl(${slot.h} ${slot.s}% ${slot.l}%)`;
-  const border = `hsl(${slot.h} ${Math.min(65, slot.s + 8)}% ${Math.max(32, slot.l - 26)}%)`;
+  const border = `hsl(${slot.h} ${Math.min(40, slot.s + 10)}% ${slot.l > 60 ? Math.max(55, slot.l - 22) : Math.min(50, slot.l + 6)}%)`;
   const text = pickTextColorForHsl(slot.h, slot.s, slot.l);
 
   return { bg, text, border };
 }
+
 
 
 
@@ -587,37 +602,46 @@
   }
 
   // Saal NICHT im Titel (nirgendwo). Mobile: "(Schließdienst)" raus.
-  function buildCalendarEvents(raw) {
-    const isMobile = window.matchMedia('(max-width: 700px)').matches;
+ function buildCalendarEvents(raw) {
+  const isMobile = window.matchMedia('(max-width: 700px)').matches;
 
-    return raw
-      .filter(e => e.start)
-      .map(e => {
-        const fullTitle = toDisplayTitle(e);
-        const mobileTitle = fullTitle.replace(/\s*\(Schließdienst\)\s*/i, '').trim();
+  return raw
+    .filter(e => e.start)
+    .map(e => {
+      const fullTitle = toDisplayTitle(e);
+      const mobileTitle = fullTitle.replace(/\s*\(Schließdienst\)\s*/i, '').trim();
 
-        const { bg, text, border } = colorsForEvent(e);
+      const { bg, text, border } = colorsForEvent(e);
 
-        return {
-          id: e.id ? String(e.id) : undefined,
-          title: isMobile ? mobileTitle : fullTitle,
-          start: e.start,
-          end: e.end || null,
+      const isSD = isSchliessdienst(e);
+      const isCity = safeText(e.versammlung).trim().toLowerCase() === 'darmstadt';
 
-          display: 'block', // ✅ Punkt/Dot-Render vermeiden -> Balken
+      return {
+        id: e.id ? String(e.id) : undefined,
+        title: isMobile ? mobileTitle : fullTitle,
+        start: e.start,
+        end: e.end || null,
 
-          // ✅ Hintergrund + Textfarbe
-          backgroundColor: bg,
-          borderColor: border,
-          textColor: text,
+        // ✅ immer Balken, keine Dot-Events
+        display: 'block',
 
-          // optional: CSS-Hook für zusätzliche SD-Optik
-          classNames: isSchliessdienst(e) ? ['sd-event'] : [],
+        // Farben (Darmstadt = transparent kommt aus colorsForEvent)
+        backgroundColor: bg,
+        borderColor: border,
+        textColor: text,
 
-          extendedProps: e
-        };
-      });
-  }
+        // CSS-Hooks
+        classNames: [
+          ...(isSD ? ['sd-event'] : []),
+          ...(isCity ? ['city-event'] : [])
+        ],
+
+        // Originaldaten behalten
+        extendedProps: e
+      };
+    });
+}
+
 
   function renderList(raw) {
     const q = $('search').value.trim().toLowerCase();
