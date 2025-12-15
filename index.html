@@ -186,6 +186,21 @@
 
   /* ================= FullCalendar ================= */
 
+  /* ✅ Dot-Events im Monatsraster in Balken verwandeln */
+  .fc .fc-daygrid-dot-event{
+    display: block !important;
+  }
+
+  /* ✅ Standard-Balken-Event erzwingen */
+  .fc .fc-daygrid-event{
+    display: block !important;
+  }
+
+  /* ✅ Punkte komplett ausblenden (nicht nur mobile) */
+  .fc .fc-daygrid-event-dot{
+    display: none !important;
+  }
+
   /* Mobile-first: 1 Zeile */
   .fc .fc-daygrid-event { 
     white-space: nowrap !important; 
@@ -216,11 +231,11 @@
   }
 
   /* ============================== Schließdienst: zusätzliche Hervorhebung ============================== */
-.fc .fc-event.sd-event{
-  box-shadow:
-    inset 0 0 0 2px rgba(255,255,255,.55),
-    0 1px 0 rgba(15,23,42,.08);
-}
+  .fc .fc-event.sd-event{
+    box-shadow:
+      inset 0 0 0 2px rgba(255,255,255,.55),
+      0 1px 0 rgba(15,23,42,.08);
+  }
   
   /* ================= Mobile Optimierungen ================= */
 
@@ -254,9 +269,7 @@
       justify-content: center;
     }
 
-    /* FullCalendar: Punkt & Zeit weg */
-    .fc .fc-daygrid-event-dot { display: none !important; }
-
+    /* FullCalendar: Zeit weg */
     .fc .fc-event-time,
     .fc .fc-daygrid-event-time,
     .fc .fc-list-event-time { display: none !important; }
@@ -376,87 +389,86 @@
   const $ = (id) => document.getElementById(id);
 
   function stringToHue(str) {
-  // deterministische Farbe pro String
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
-  return h % 360;
-}
-function hashToHue(str) {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
-  return h % 360;
-}
+    // deterministische Farbe pro String
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    return h % 360;
+  }
+  function hashToHue(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    return h % 360;
+  }
 
-function hslToRgb(h, s, l) {
-  s /= 100; l /= 100;
-  const c = (1 - Math.abs(2*l - 1)) * s;
-  const x = c * (1 - Math.abs(((h/60) % 2) - 1));
-  const m = l - c/2;
-  let r=0,g=0,b=0;
+  function hslToRgb(h, s, l) {
+    s /= 100; l /= 100;
+    const c = (1 - Math.abs(2*l - 1)) * s;
+    const x = c * (1 - Math.abs(((h/60) % 2) - 1));
+    const m = l - c/2;
+    let r=0,g=0,b=0;
 
-  if (0 <= h && h < 60) { r=c; g=x; b=0; }
-  else if (60 <= h && h < 120) { r=x; g=c; b=0; }
-  else if (120 <= h && h < 180) { r=0; g=c; b=x; }
-  else if (180 <= h && h < 240) { r=0; g=x; b=c; }
-  else if (240 <= h && h < 300) { r=x; g=0; b=c; }
-  else { r=c; g=0; b=x; }
+    if (0 <= h && h < 60) { r=c; g=x; b=0; }
+    else if (60 <= h && h < 120) { r=x; g=c; b=0; }
+    else if (120 <= h && h < 180) { r=0; g=c; b=x; }
+    else if (180 <= h && h < 240) { r=0; g=x; b=c; }
+    else if (240 <= h && h < 300) { r=x; g=0; b=c; }
+    else { r=c; g=0; b=x; }
 
-  return {
-    r: Math.round((r+m)*255),
-    g: Math.round((g+m)*255),
-    b: Math.round((b+m)*255)
-  };
-}
+    return {
+      r: Math.round((r+m)*255),
+      g: Math.round((g+m)*255),
+      b: Math.round((b+m)*255)
+    };
+  }
 
-function relativeLuminance({r,g,b}) {
-  // WCAG relative luminance
-  const srgb = [r,g,b].map(v => {
-    v /= 255;
-    return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4);
-  });
-  return 0.2126*srgb[0] + 0.7152*srgb[1] + 0.0722*srgb[2];
-}
+  function relativeLuminance({r,g,b}) {
+    // WCAG relative luminance
+    const srgb = [r,g,b].map(v => {
+      v /= 255;
+      return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4);
+    });
+    return 0.2126*srgb[0] + 0.7152*srgb[1] + 0.0722*srgb[2];
+  }
 
-function pickTextColorForHsl(h, s, l) {
-  const rgb = hslToRgb(h, s, l);
-  const lum = relativeLuminance(rgb);
-  // Schwelle: je nach Geschmack. 0.5 ist ein guter Start.
-  return lum > 0.55 ? '#0f172a' : '#ffffff';
-}
+  function pickTextColorForHsl(h, s, l) {
+    const rgb = hslToRgb(h, s, l);
+    const lum = relativeLuminance(rgb);
+    return lum > 0.55 ? '#0f172a' : '#ffffff';
+  }
+
+  function isSchliessdienst(e) {
+    return e && e.schliessdienst !== null && e.schliessdienst !== undefined && String(e.schliessdienst).trim() !== '';
+  }
 
   function colorsForEvent(e) {
-  const name = (e.versammlung || 'unbekannt').trim().toLowerCase();
-  const hue = hashToHue(name);
+    const name = (e.versammlung || 'unbekannt').trim().toLowerCase();
+    const hue = hashToHue(name);
 
-  const isSD = isSchliessdienst(e);
+    const isSD = isSchliessdienst(e);
 
-  // Normal: pastellhell
-  let s = 70;
-  let l = 86;
+    // Normal: pastellhell
+    let s = 70;
+    let l = 86;
 
-  // Schließdienst: etwas kräftiger/kontrastreicher
-  if (isSD) { s = 85; l = 55; }  // dunkler => meistens weißer Text
+    // Schließdienst: etwas kräftiger/kontrastreicher
+    if (isSD) { s = 85; l = 55; }
 
-  const text = pickTextColorForHsl(hue, s, l);
-  const bg = `hsl(${hue} ${s}% ${l}%)`;
+    const text = pickTextColorForHsl(hue, s, l);
+    const bg = `hsl(${hue} ${s}% ${l}%)`;
 
-  return { bg, text, border: bg };
-}
+    return { bg, text, border: bg };
+  }
 
-  
-function colorForVersammlung(name) {
-  const base = (name || '').trim().toLowerCase();
-  const hue = stringToHue(base || 'default');
-  // angenehme Pastell-Farbe
-  return `hsl(${hue} 70% 85%)`;
-}
+  function colorForVersammlung(name) {
+    const base = (name || '').trim().toLowerCase();
+    const hue = stringToHue(base || 'default');
+    return `hsl(${hue} 70% 85%)`;
+  }
 
-function textColorFor(bgHsl) {
-  // sehr simpel: Pastell ist fast immer dunkel lesbar
-  return '#0f172a';
-}
+  function textColorFor(bgHsl) {
+    return '#0f172a';
+  }
 
-  
   function showStatus(type, msg) {
     const el = $('status');
     el.style.display = 'block';
@@ -511,10 +523,6 @@ function textColorFor(bgHsl) {
     return new Intl.DateTimeFormat('de-DE', { year:'numeric', month:'2-digit', day:'2-digit' }).format(d);
   }
 
-  function isSchliessdienst(e) {
-    return e && e.schliessdienst !== null && e.schliessdienst !== undefined && String(e.schliessdienst).trim() !== '';
-  }
-
   // ---------- State ----------
   let allEventsRaw = [];
   let calendar;
@@ -542,37 +550,37 @@ function textColorFor(bgHsl) {
   }
 
   // Saal NICHT im Titel (nirgendwo). Mobile: "(Schließdienst)" raus.
- function buildCalendarEvents(raw) {
-  const isMobile = window.matchMedia('(max-width: 700px)').matches;
+  function buildCalendarEvents(raw) {
+    const isMobile = window.matchMedia('(max-width: 700px)').matches;
 
-  return raw
-    .filter(e => e.start)
-    .map(e => {
-      const fullTitle = toDisplayTitle(e);
-      const mobileTitle = fullTitle.replace(/\s*\(Schließdienst\)\s*/i, '').trim();
+    return raw
+      .filter(e => e.start)
+      .map(e => {
+        const fullTitle = toDisplayTitle(e);
+        const mobileTitle = fullTitle.replace(/\s*\(Schließdienst\)\s*/i, '').trim();
 
-      const { bg, text, border } = colorsForEvent(e);
+        const { bg, text, border } = colorsForEvent(e);
 
-      return {
-        id: e.id ? String(e.id) : undefined,
-        title: isMobile ? mobileTitle : fullTitle,
-        start: e.start,
-        end: e.end || null,
+        return {
+          id: e.id ? String(e.id) : undefined,
+          title: isMobile ? mobileTitle : fullTitle,
+          start: e.start,
+          end: e.end || null,
 
-        // ✅ Hintergrund + Textfarbe
-        backgroundColor: bg,
-        borderColor: border,
-        textColor: text,
+          display: 'block', // ✅ Punkt/Dot-Render vermeiden -> Balken
 
-        // optional: CSS-Hook für zusätzliche SD-Optik
-        classNames: isSchliessdienst(e) ? ['sd-event'] : [],
+          // ✅ Hintergrund + Textfarbe
+          backgroundColor: bg,
+          borderColor: border,
+          textColor: text,
 
-        extendedProps: e
-      };
-    });
-}
+          // optional: CSS-Hook für zusätzliche SD-Optik
+          classNames: isSchliessdienst(e) ? ['sd-event'] : [],
 
-
+          extendedProps: e
+        };
+      });
+  }
 
   function renderList(raw) {
     const q = $('search').value.trim().toLowerCase();
@@ -674,11 +682,12 @@ function textColorFor(bgHsl) {
           right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
 
-         buttonText: {
-            dayGridMonth: 'Monat',
-            timeGridWeek: 'Woche',
-            timeGridDay: 'Tag'
-          },
+        buttonText: {
+          dayGridMonth: 'Monat',
+          timeGridWeek: 'Woche',
+          timeGridDay: 'Tag'
+        },
+
         // Mobile: Uhrzeit in allen Views aus (Desktop behält Uhrzeit)
         views: isMobile ? {
           dayGridMonth: { displayEventTime: false },
@@ -689,6 +698,14 @@ function textColorFor(bgHsl) {
         eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
 
         events: buildCalendarEvents(allEventsRaw),
+
+        // ✅ Farben & Balken-Optik “hart” erzwingen (überschreibt Theme/CSS-Konflikte)
+        eventDidMount: function(info) {
+          info.el.style.display = 'block';
+          if (info.event.backgroundColor) info.el.style.backgroundColor = info.event.backgroundColor;
+          if (info.event.borderColor) info.el.style.borderColor = info.event.borderColor;
+          if (info.event.textColor) info.el.style.color = info.event.textColor;
+        },
 
         // Nach Monatswechsel zentrieren
         datesSet: function() {
