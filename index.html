@@ -18,8 +18,27 @@
       border-bottom: 1px solid var(--line);
     }
     .wrap { max-width: 1600px; margin: 0 auto; padding: 14px 16px; }
-    .topbar { display:flex; gap:12px; align-items:center; justify-content:space-between; }
-    h1 { font-size: 18px; margin: 0; letter-spacing: .2px; }
+    .topbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;      /* 👈 wichtig */
+  min-height: 44px;        /* 👈 Platz für zentrierten Titel */
+}
+
+    h1 {
+  font-size: 18px;
+  margin: 0;
+  letter-spacing: .2px;
+
+  /* 👇 NEU */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  white-space: nowrap;
+}
     .seg {
       display:inline-flex; background: var(--card);
       border:1px solid var(--line); border-radius: 12px; padding: 4px;
@@ -407,6 +426,11 @@
         nowIndicator: true,
 
         headerToolbar: {
+          buttonText: {
+            dayGridMonth: 'Monat',
+            timeGridWeek: 'Woche',
+            timeGridDay: 'Tag'
+          },
           left: 'prev,next',
           center: 'title',
           right: 'dayGridMonth,timeGridWeek,timeGridDay'
