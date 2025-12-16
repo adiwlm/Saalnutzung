@@ -230,39 +230,34 @@
     }
   }
 
-  /* ============================== Schließdienst: zusätzliche Hervorhebung ============================== */
-/* Schließdienst: gleiche Grundfarbe, aber seriöse Markierung (Rand + dezentes Pattern) */
-.fc .fc-event.sd-event{
-  position: relative;
-  border-width: 2px !important;
-}
+  /* ============================== Schließdienst: Hervorhebung (Rand + dezentes Pattern) ============================== */
+  .fc .fc-event.sd-event{
+    position: relative;
+    border-width: 2px !important;
+  }
 
-/* Pattern liegt HINTER dem Text */
-.fc .fc-event.sd-event::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius: inherit;
-  pointer-events:none;
-  z-index: 0;
+  /* Pattern liegt HINTER dem Text */
+  .fc .fc-event.sd-event::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border-radius: inherit;
+    pointer-events:none;
+    z-index: 0;
 
-  background-image: repeating-linear-gradient(
-    45deg,
-    rgba(255,255,255,.18) 0 8px,
-    rgba(255,255,255,0) 8px 16px
-  );
-}
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(255,255,255,.18) 0 8px,
+      rgba(255,255,255,0) 8px 16px
+    );
+  }
 
-/* Text/Content liegt VOR dem Pattern */
-.fc .fc-event.sd-event .fc-event-main{
-  position: relative;
-  z-index: 1;
-}
+  /* Text/Content liegt VOR dem Pattern */
+  .fc .fc-event.sd-event .fc-event-main{
+    position: relative;
+    z-index: 1;
+  }
 
-  .fc .fc-event.city-event{
-  background: transparent !important;
-}
-  
   /* ================= Mobile Optimierungen ================= */
 
   @media (max-width: 700px){
@@ -380,6 +375,21 @@
     <div id="calendarWrap">
       <div id="calendar"></div>
     </div>
+
+    <!-- ✅ Legende / Zuordnung -->
+    <div id="legendWrap" style="overflow:auto; margin-top:12px;">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:64px;">Farbe</th>
+            <th>Versammlung</th>
+            <th style="width:120px;">Quelle</th>
+          </tr>
+        </thead>
+        <tbody id="legendBody"></tbody>
+      </table>
+    </div>
+
     <p class="hint">Bereitgestellt durch das IK-Darmstadt.</p>
   </section>
 
@@ -415,7 +425,6 @@
   const $ = (id) => document.getElementById(id);
 
   function stringToHue(str) {
-    // deterministische Farbe pro String
     let h = 0;
     for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
     return h % 360;
@@ -448,7 +457,6 @@
   }
 
   function relativeLuminance({r,g,b}) {
-    // WCAG relative luminance
     const srgb = [r,g,b].map(v => {
       v /= 255;
       return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4);
@@ -466,59 +474,71 @@
     return e && e.schliessdienst !== null && e.schliessdienst !== undefined && String(e.schliessdienst).trim() !== '';
   }
 
- function colorsForEvent(e) {
-  const rawName = safeText(e.versammlung || 'unbekannt').trim();
-  const name = rawName.toLowerCase();
-
-  // ✅ Darmstadt: weiß/neutral, nur Rahmen
-  if (name === 'darmstadt') {
-    return {
-      bg: 'transparent',
-      border: '#cbd5e1',   // dezenter Rahmen
-      text: '#0f172a'
-    };
+  function safeText(v) {
+    if (v === null || v === undefined) return '';
+    return String(v);
   }
 
-  // 🎨 Ruhige, entsättigte Palette + 2 Grautöne (weniger bunt)
-  const palette = [
-    { h: 210, s: 22, l: 92 }, // Blau (sehr ruhig)
-    { h: 150, s: 20, l: 92 }, // Grün
-    { h: 35,  s: 24, l: 93 }, // Ocker
-    { h: 270, s: 18, l: 93 }, // Violett
-    { h: 195, s: 22, l: 92 }, // Petrol
-    { h: 120, s: 18, l: 93 }, // Salbei
-    { h: 245, s: 18, l: 92 }, // Indigo
-    { h: 20,  s: 22, l: 94 }, // Sand
-
-    // ✅ Grau (hell, wenig bunt)
-    { h: 210, s: 10, l: 94 }, // hellgrau-bläulich
-
-    // ✅ Grau (stärker, Text weiß)
-    { h: 215, s: 12, l: 38 }  // dunkelgrau-bläulich
-  ];
-
-  const hash = hashToHue(name);
-  const slot = palette[hash % palette.length];
-
-  const bg = `hsl(${slot.h} ${slot.s}% ${slot.l}%)`;
-  const border = `hsl(${slot.h} ${Math.min(40, slot.s + 10)}% ${slot.l > 60 ? Math.max(55, slot.l - 22) : Math.min(50, slot.l + 6)}%)`;
-  const text = pickTextColorForHsl(slot.h, slot.s, slot.l);
-
-  return { bg, text, border };
-}
-
-
-
-
-
-  function colorForVersammlung(name) {
-    const base = (name || '').trim().toLowerCase();
-    const hue = stringToHue(base || 'default');
-    return `hsl(${hue} 70% 85%)`;
+  function normalizeKey(s) {
+    return safeText(s).trim().toLowerCase();
   }
 
-  function textColorFor(bgHsl) {
-    return '#0f172a';
+  // ---------- Feste Farben (nur wo du manuell optimieren willst) ----------
+  // ✅ Darmstadt ist neutral/weiß (ohne Füllfarbe)
+  // ✅ Trage hier genau die 2 Versammlungen ein, die du optimieren willst (Beispiele unten)
+  const COLOR_MAP = {
+    "darmstadt": { type: "neutral" },
+    "da-griechisch": { bg: "hsl(116 65% 77%)", border: "hsl(116 43% 57%)", text: "#0f172a" },
+    "da-russisch": { bg: "hsl(358 80% 74%)", border: "hsl(358 67% 61%)", text: "#0f172a" },
+  };
+
+  // ---------- Dynamischer Fallback (dein aktueller, guter Look) ----------
+  function colorsForNameFallback(name) {
+    const key = normalizeKey(name) || "unbekannt";
+
+    const palette = [
+      { h: 210, s: 22, l: 92 }, // Blau (sehr ruhig)
+      { h: 150, s: 20, l: 92 }, // Grün
+      { h: 35,  s: 24, l: 93 }, // Ocker
+      { h: 270, s: 18, l: 93 }, // Violett
+      { h: 195, s: 22, l: 92 }, // Petrol
+      { h: 120, s: 18, l: 93 }, // Salbei
+      { h: 245, s: 18, l: 92 }, // Indigo
+      { h: 20,  s: 22, l: 94 }, // Sand
+      { h: 210, s: 10, l: 94 }, // hellgrau-bläulich
+      { h: 215, s: 12, l: 38 }  // dunkelgrau-bläulich (weiß text)
+    ];
+
+    const hash = hashToHue(key);
+    const slot = palette[hash % palette.length];
+
+    const bg = `hsl(${slot.h} ${slot.s}% ${slot.l}%)`;
+    const border = `hsl(${slot.h} ${Math.min(40, slot.s + 10)}% ${
+      slot.l > 60 ? Math.max(55, slot.l - 22) : Math.min(50, slot.l + 6)
+    }%)`;
+    const text = pickTextColorForHsl(slot.h, slot.s, slot.l);
+
+    return { bg, text, border, source: "auto" };
+  }
+
+  function colorsForEvent(e) {
+    const vers = safeText(e.versammlung || 'unbekannt');
+    const key = normalizeKey(vers);
+
+    const mapped = COLOR_MAP[key];
+    if (mapped) {
+      if (mapped.type === "neutral") {
+        return { bg: "transparent", border: "#cbd5e1", text: "#0f172a", source: "fix" };
+      }
+      return {
+        bg: mapped.bg,
+        border: mapped.border || mapped.bg,
+        text: mapped.text || "#0f172a",
+        source: "fix"
+      };
+    }
+
+    return colorsForNameFallback(vers);
   }
 
   function showStatus(type, msg) {
@@ -539,11 +559,6 @@
       if ('Value' in v) return v.Value;
       if ('value' in v) return v.value;
     }
-    return String(v);
-  }
-
-  function safeText(v) {
-    if (v === null || v === undefined) return '';
     return String(v);
   }
 
@@ -575,6 +590,55 @@
     return new Intl.DateTimeFormat('de-DE', { year:'numeric', month:'2-digit', day:'2-digit' }).format(d);
   }
 
+  // ---------- Legend ----------
+  function renderLegend(raw) {
+    const tbody = $('legendBody');
+    if (!tbody) return;
+
+    const set = new Set();
+    raw.forEach(e => {
+      const v = safeText(e.versammlung).trim();
+      if (v) set.add(v);
+    });
+
+    const list = Array.from(set).sort((a, b) => a.localeCompare(b, 'de'));
+
+    tbody.innerHTML = list.map(name => {
+      const key = normalizeKey(name);
+
+      let c;
+      const mapped = COLOR_MAP[key];
+      if (mapped) {
+        if (mapped.type === "neutral") {
+          c = { bg: "transparent", border: "#cbd5e1", text: "#0f172a", source: "fix" };
+        } else {
+          c = { bg: mapped.bg, border: mapped.border || mapped.bg, text: mapped.text || "#0f172a", source: "fix" };
+        }
+      } else {
+        c = colorsForNameFallback(name);
+      }
+
+      const swatchStyle = [
+        `background:${c.bg};`,
+        `border:2px solid ${c.border};`,
+        `border-radius:8px;`,
+        `height:18px;`,
+        `width:46px;`,
+        `display:inline-block;`
+      ].join('');
+
+      const sourceLabel = c.source === "fix" ? "fix" : "auto";
+
+      return `
+        <tr>
+          <td><span style="${swatchStyle}"></span></td>
+          <td><span class="rowtitle">${safeText(name)}</span></td>
+          <td><span class="badge">${sourceLabel}</span></td>
+        </tr>
+      `;
+    }).join('');
+  }
+
   // ---------- State ----------
   let allEventsRaw = [];
   let calendar;
@@ -602,46 +666,36 @@
   }
 
   // Saal NICHT im Titel (nirgendwo). Mobile: "(Schließdienst)" raus.
- function buildCalendarEvents(raw) {
-  const isMobile = window.matchMedia('(max-width: 700px)').matches;
+  function buildCalendarEvents(raw) {
+    const isMobile = window.matchMedia('(max-width: 700px)').matches;
 
-  return raw
-    .filter(e => e.start)
-    .map(e => {
-      const fullTitle = toDisplayTitle(e);
-      const mobileTitle = fullTitle.replace(/\s*\(Schließdienst\)\s*/i, '').trim();
+    return raw
+      .filter(e => e.start)
+      .map(e => {
+        const fullTitle = toDisplayTitle(e);
+        const mobileTitle = fullTitle.replace(/\s*\(Schließdienst\)\s*/i, '').trim();
 
-      const { bg, text, border } = colorsForEvent(e);
+        const { bg, text, border } = colorsForEvent(e);
+        const isSD = isSchliessdienst(e);
 
-      const isSD = isSchliessdienst(e);
-      const isCity = safeText(e.versammlung).trim().toLowerCase() === 'darmstadt';
+        return {
+          id: e.id ? String(e.id) : undefined,
+          title: isMobile ? mobileTitle : fullTitle,
+          start: e.start,
+          end: e.end || null,
 
-      return {
-        id: e.id ? String(e.id) : undefined,
-        title: isMobile ? mobileTitle : fullTitle,
-        start: e.start,
-        end: e.end || null,
+          display: 'block',
 
-        // ✅ immer Balken, keine Dot-Events
-        display: 'block',
+          backgroundColor: bg,
+          borderColor: border,
+          textColor: text,
 
-        // Farben (Darmstadt = transparent kommt aus colorsForEvent)
-        backgroundColor: bg,
-        borderColor: border,
-        textColor: text,
+          classNames: isSD ? ['sd-event'] : [],
 
-        // CSS-Hooks
-        classNames: [
-          ...(isSD ? ['sd-event'] : []),
-          ...(isCity ? ['city-event'] : [])
-        ],
-
-        // Originaldaten behalten
-        extendedProps: e
-      };
-    });
-}
-
+          extendedProps: e
+        };
+      });
+  }
 
   function renderList(raw) {
     const q = $('search').value.trim().toLowerCase();
@@ -729,6 +783,9 @@
       const isMobile = window.matchMedia('(max-width: 700px)').matches;
       allEventsRaw = await loadEvents();
 
+      // ✅ Legende initial
+      renderLegend(allEventsRaw);
+
       const calEl = $('calendar');
       calendar = new FullCalendar.Calendar(calEl, {
         initialView: 'dayGridMonth',
@@ -760,7 +817,7 @@
 
         events: buildCalendarEvents(allEventsRaw),
 
-        // ✅ Farben & Balken-Optik “hart” erzwingen (überschreibt Theme/CSS-Konflikte)
+        // ✅ Farben & Balken-Optik “hart” erzwingen
         eventDidMount: function(info) {
           info.el.style.display = 'block';
           if (info.event.backgroundColor) info.el.style.backgroundColor = info.event.backgroundColor;
@@ -768,7 +825,6 @@
           if (info.event.textColor) info.el.style.color = info.event.textColor;
         },
 
-        // Nach Monatswechsel zentrieren
         datesSet: function() {
           centerMobileCalendar();
         },
@@ -802,6 +858,10 @@
   $('btnRefresh').addEventListener('click', async () => {
     try {
       allEventsRaw = await loadEvents();
+
+      // ✅ Legende updaten
+      renderLegend(allEventsRaw);
+
       calendar.removeAllEvents();
       calendar.addEventSource(buildCalendarEvents(allEventsRaw));
       renderList(allEventsRaw);
