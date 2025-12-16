@@ -373,6 +373,20 @@
       font-size: 0.85rem;
     }
   }
+  /* ================= Klick-/Active-State von Events deaktivieren ================= */
+.fc .fc-event:focus,
+.fc .fc-event.fc-event-selected,
+.fc .fc-event.fc-event-selected:before,
+.fc .fc-event.fc-event-selected:after,
+.fc .fc-event.fc-event-selected .fc-event-main,
+.fc .fc-event:active,
+.fc .fc-event:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
 </style>
 </head>
 
@@ -664,17 +678,21 @@
         },
 
         eventClick: function(info) {
-          const e = info.event.extendedProps || {};
-          const title = toDisplayTitle(e);
-          const msg =
-            `${title}\n` +
-            (e.versammlung ? `Versammlung: ${safeText(e.versammlung)}\n` : '') +
-            (e.saal ? `Saal: ${safeText(e.saal)}\n` : '') +
-            `Start: ${formatDateTime(e.start)}\n` +
-            (e.end ? `Ende: ${formatDateTime(e.end)}\n` : '') +
-            (isSchliessdienst(e) ? `Schließdienst: Ja\n` : `Schließdienst: Nein\n`);
-          alert(msg);
-        }
+  // ✅ sofort visuelle Auswahl zurücksetzen
+  if (calendar) calendar.unselect();
+  if (info.jsEvent) info.jsEvent.preventDefault();
+
+  const e = info.event.extendedProps || {};
+  const title = toDisplayTitle(e);
+  const msg =
+    `${title}\n` +
+    (e.versammlung ? `Versammlung: ${safeText(e.versammlung)}\n` : '') +
+    (e.saal ? `Saal: ${safeText(e.saal)}\n` : '') +
+    `Start: ${formatDateTime(e.start)}\n` +
+    (e.end ? `Ende: ${formatDateTime(e.end)}\n` : '') +
+    (isSchliessdienst(e) ? `Schließdienst: Ja\n` : `Schließdienst: Nein\n`);
+  alert(msg);
+}
       });
 
       calendar.render();
