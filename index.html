@@ -223,6 +223,26 @@
   border: 1px solid var(--line) !important;
 }
 
+/* Klickbar machen */
+.fc .fc-event {
+  cursor: pointer !important;
+}
+
+/* Hover-Feedback (Desktop) */
+@media (hover:hover) and (pointer:fine) {
+  .fc .fc-event:hover {
+    border-color: #94a3b8 !important;
+    background: rgba(148,163,184,.10) !important;
+  }
+}
+
+/* Active-Feedback (beim Klicken) */
+@media (hover:hover) and (pointer:fine) {
+  .fc .fc-event:active {
+    background: rgba(148,163,184,.16) !important;
+  }
+}
+
 /* Text explizit setzen (alle relevanten Stellen) */
 .fc .fc-event,
 .fc .fc-event .fc-event-main,
@@ -588,20 +608,31 @@
 
 function closeEventModal() {
   const modal = $('eventModal');
+  if (!modal) return;
   modal.classList.remove('is-open');
   modal.setAttribute('aria-hidden', 'true');
 }
 
-// Modal wiring (einmalig)
 document.addEventListener('click', (e) => {
   const t = e.target;
-  if (t && t.getAttribute && t.getAttribute('data-close') === '1') closeEventModal();
+
+  // Klick auf Backdrop schließt
+  if (t && t.getAttribute && t.getAttribute('data-close') === '1') {
+    closeEventModal();
+    return;
+  }
+
+  // Klick auf X schließt (delegiert!)
+  if (t && (t.id === 'eventModalClose' || t.closest?.('#eventModalClose'))) {
+    closeEventModal();
+    return;
+  }
 });
-$('eventModalClose')?.addEventListener('click', closeEventModal);
-$('eventModalOk')?.addEventListener('click', closeEventModal);
+
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeEventModal();
 });
+
 
   
   function choiceValue(v) {
@@ -895,9 +926,6 @@ document.addEventListener('keydown', (e) => {
 
     <div class="modal__body" id="eventModalBody"></div>
 
-    <div class="modal__footer">
-      <button id="eventModalOk" type="button" class="modal__btn">OK</button>
-    </div>
   </div>
 </div>
 
