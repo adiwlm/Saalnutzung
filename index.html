@@ -867,21 +867,20 @@ document.addEventListener('keydown', (e) => {
   const e = info.event.extendedProps || {};
   const title = toDisplayTitle(e);
 
-  const meta = [
-    safeText(e.ereignisart) ? safeText(e.ereignisart) : null,
-    safeText(e.saal) ? `Saal: ${safeText(e.saal)}` : null
-  ].filter(Boolean).join(' · ');
+  const meta = safeText(e.ereignisart) || '';
 
   openEventModal({
-    title,
-    meta,
-    rows: [
-      { k: 'Versammlung', v: safeText(e.versammlung) || '—' },
-      { k: 'Start',       v: formatDateTime(e.start) || '—' },
-      { k: 'Ende',        v: e.end ? formatDateTime(e.end) : '—' },
-      { k: 'Schließdienst', v: isSchliessdienst(e) ? 'Ja' : 'Nein' }
-    ]
-  });
+  title,
+  meta,
+  rows: [
+    { k: 'Versammlung', v: safeText(e.versammlung) || '—' },
+    { k: 'Saal',        v: safeText(e.saal) || '—' },   // ✅ NEU & richtig platziert
+    { k: 'Start',       v: formatDateTime(e.start) || '—' },
+    { k: 'Ende',        v: e.end ? formatDateTime(e.end) : '—' },
+    { k: 'Schließdienst', v: isSchliessdienst(e) ? 'Ja' : 'Nein' }
+  ]
+});
+
 }
 
       });
