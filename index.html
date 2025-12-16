@@ -188,6 +188,33 @@
   /* Dot-Events im Monatsraster in Balken verwandeln */
   .fc .fc-daygrid-dot-event { display: block !important; }
   .fc .fc-daygrid-event { display: block !important; }
+  /* ✅ Month/dayGrid: Zeit darf nicht abgeschnitten werden */
+  .fc .fc-daygrid-event .fc-event-main,
+  .fc .fc-daygrid-event .fc-event-main-frame {
+    display: flex !important;
+    align-items: center;
+    min-width: 0;
+  }
+  
+  /* Uhrzeit: nie schrumpfen / nie umbrechen */
+  .fc .fc-daygrid-event .fc-event-time {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    margin-right: 6px;
+  }
+  
+  /* Titel: darf kürzen, nicht die Uhrzeit */
+  .fc .fc-daygrid-event .fc-event-title-container,
+  .fc .fc-daygrid-event .fc-event-title {
+    flex: 1 1 auto !important;
+    min-width: 0;
+  }
+  
+  /* ✅ SD-Events: nichts clippen */
+  .fc .fc-event.sd-event {
+    overflow: visible !important;
+  }
+
   .fc .fc-daygrid-event-dot { display: none !important; }
 
   /* Neutraler Look: Rahmen ja, Text immer dunkel */
