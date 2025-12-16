@@ -190,12 +190,20 @@
   .fc .fc-daygrid-event { display: block !important; }
   .fc .fc-daygrid-event-dot { display: none !important; }
 
-  /* Neutraler Look: keine farbigen Hintergründe erzwingen */
-  .fc .fc-event {
-    background: transparent !important;
-    border: 1px solid var(--line) !important;
-    color: var(--text) !important;
-  }
+  /* Neutraler Look: Rahmen ja, Text immer dunkel */
+.fc .fc-event {
+  background: transparent !important;
+  border: 1px solid var(--line) !important;
+}
+
+/* Text explizit setzen (alle relevanten Stellen) */
+.fc .fc-event,
+.fc .fc-event .fc-event-main,
+.fc .fc-event .fc-event-title,
+.fc .fc-event .fc-event-time {
+  color: var(--text) !important;
+}
+
 
   /* Mobile-first: 1 Zeile */
   .fc .fc-daygrid-event { 
