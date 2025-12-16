@@ -48,7 +48,7 @@
     gap: 12px;
     align-items: center;
     justify-content: space-between;
-    position: relative;      /* für zentrierten Titel */
+    position: relative;
     min-height: 44px;
   }
 
@@ -57,7 +57,6 @@
     margin: 0;
     letter-spacing: .2px;
 
-    /* Desktop: exakt mittig */
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
@@ -186,19 +185,16 @@
 
   /* ================= FullCalendar ================= */
 
-  /* ✅ Dot-Events im Monatsraster in Balken verwandeln */
-  .fc .fc-daygrid-dot-event{
-    display: block !important;
-  }
+  /* Dot-Events im Monatsraster in Balken verwandeln */
+  .fc .fc-daygrid-dot-event { display: block !important; }
+  .fc .fc-daygrid-event { display: block !important; }
+  .fc .fc-daygrid-event-dot { display: none !important; }
 
-  /* ✅ Standard-Balken-Event erzwingen */
-  .fc .fc-daygrid-event{
-    display: block !important;
-  }
-
-  /* ✅ Punkte komplett ausblenden (nicht nur mobile) */
-  .fc .fc-daygrid-event-dot{
-    display: none !important;
+  /* Neutraler Look: keine farbigen Hintergründe erzwingen */
+  .fc .fc-event {
+    background: transparent !important;
+    border: 1px solid var(--line) !important;
+    color: var(--text) !important;
   }
 
   /* Mobile-first: 1 Zeile */
@@ -206,7 +202,6 @@
     white-space: nowrap !important; 
     align-items: center; 
   }
-
   .fc .fc-daygrid-event .fc-event-title {
     white-space: nowrap !important;
     overflow: hidden;
@@ -219,7 +214,6 @@
       white-space: normal !important; 
       align-items: flex-start; 
     }
-
     .fc .fc-daygrid-event .fc-event-title {
       white-space: normal !important;
       line-height: 1.25;
@@ -230,13 +224,13 @@
     }
   }
 
-  /* ============================== Schließdienst: Hervorhebung (Rand + dezentes Pattern) ============================== */
+  /* Schließdienst: neutraler Rahmen + dezentes Pattern (ohne Farben) */
   .fc .fc-event.sd-event{
     position: relative;
     border-width: 2px !important;
+    border-color: #94a3b8 !important; /* neutral-grau */
   }
 
-  /* Pattern liegt HINTER dem Text */
   .fc .fc-event.sd-event::before{
     content:"";
     position:absolute;
@@ -244,15 +238,13 @@
     border-radius: inherit;
     pointer-events:none;
     z-index: 0;
-
     background-image: repeating-linear-gradient(
       45deg,
-      rgba(255,255,255,.18) 0 8px,
-      rgba(255,255,255,0) 8px 16px
+      rgba(148,163,184,.18) 0 8px,
+      rgba(148,163,184,0) 8px 16px
     );
   }
 
-  /* Text/Content liegt VOR dem Pattern */
   .fc .fc-event.sd-event .fc-event-main{
     position: relative;
     z-index: 1;
@@ -263,12 +255,9 @@
   @media (max-width: 700px){
 
     .wrap { padding: 10px 12px; }
-
     h1 { font-size: 16px; }
-
     .seg button { padding: 6px 10px; }
 
-    /* Header: kein Überlappen */
     .topbar{
       flex-wrap: wrap;
       justify-content: center;
@@ -290,12 +279,11 @@
       justify-content: center;
     }
 
-    /* FullCalendar: Zeit weg */
+    /* Zeit weg */
     .fc .fc-event-time,
     .fc .fc-daygrid-event-time,
     .fc .fc-list-event-time { display: none !important; }
 
-    /* Titelanfang erzwingen */
     .fc .fc-daygrid-event .fc-event-main,
     .fc .fc-timegrid-event .fc-event-main {
       display: flex;
@@ -312,7 +300,6 @@
       white-space: nowrap !important;
     }
 
-    /* Horizontaler Swipe im Monatskalender */
     #calendarWrap{
       overflow-x: auto;
       overflow-y: visible;
@@ -321,11 +308,8 @@
       padding-bottom: 6px;
     }
 
-    #calendar{ 
-      min-width: 980px; 
-    }
+    #calendar{ min-width: 980px; }
 
-    /* Toolbar: Switches oben, Titel darunter */
     .fc .fc-header-toolbar{
       display: flex;
       flex-direction: column;
@@ -375,21 +359,6 @@
     <div id="calendarWrap">
       <div id="calendar"></div>
     </div>
-
-    <!-- ✅ Legende / Zuordnung -->
-    <div id="legendWrap" style="overflow:auto; margin-top:12px;">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:64px;">Farbe</th>
-            <th>Versammlung</th>
-            <th style="width:120px;">Quelle</th>
-          </tr>
-        </thead>
-        <tbody id="legendBody"></tbody>
-      </table>
-    </div>
-
     <p class="hint">Bereitgestellt durch das IK-Darmstadt.</p>
   </section>
 
@@ -424,126 +393,6 @@
   // ---------- Helpers ----------
   const $ = (id) => document.getElementById(id);
 
-  function stringToHue(str) {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
-    return h % 360;
-  }
-  function hashToHue(str) {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
-    return h % 360;
-  }
-
-  function hslToRgb(h, s, l) {
-    s /= 100; l /= 100;
-    const c = (1 - Math.abs(2*l - 1)) * s;
-    const x = c * (1 - Math.abs(((h/60) % 2) - 1));
-    const m = l - c/2;
-    let r=0,g=0,b=0;
-
-    if (0 <= h && h < 60) { r=c; g=x; b=0; }
-    else if (60 <= h && h < 120) { r=x; g=c; b=0; }
-    else if (120 <= h && h < 180) { r=0; g=c; b=x; }
-    else if (180 <= h && h < 240) { r=0; g=x; b=c; }
-    else if (240 <= h && h < 300) { r=x; g=0; b=c; }
-    else { r=c; g=0; b=x; }
-
-    return {
-      r: Math.round((r+m)*255),
-      g: Math.round((g+m)*255),
-      b: Math.round((b+m)*255)
-    };
-  }
-
-  function relativeLuminance({r,g,b}) {
-    const srgb = [r,g,b].map(v => {
-      v /= 255;
-      return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4);
-    });
-    return 0.2126*srgb[0] + 0.7152*srgb[1] + 0.0722*srgb[2];
-  }
-
-  function pickTextColorForHsl(h, s, l) {
-    const rgb = hslToRgb(h, s, l);
-    const lum = relativeLuminance(rgb);
-    return lum > 0.55 ? '#0f172a' : '#ffffff';
-  }
-
-  function isSchliessdienst(e) {
-    return e && e.schliessdienst !== null && e.schliessdienst !== undefined && String(e.schliessdienst).trim() !== '';
-  }
-
-  function safeText(v) {
-    if (v === null || v === undefined) return '';
-    return String(v);
-  }
-
-  function normalizeKey(s) {
-    return safeText(s).trim().toLowerCase();
-  }
-
-  // ---------- Feste Farben (nur wo du manuell optimieren willst) ----------
-  // ✅ Darmstadt ist neutral/weiß (ohne Füllfarbe)
-  // ✅ Trage hier genau die 2 Versammlungen ein, die du optimieren willst (Beispiele unten)
-  const COLOR_MAP = {
-    "darmstadt": { type: "neutral" },
-    "da-griechisch": { bg: "hsl(0 0% 100%)", border: "hsl(116 43% 57%)", text: "#0f172a" },
-    "da-russisch": { bg: "hsl(0 0% 100%)", border: "hsl(358 67% 61%)", text: "#0f172a" },
-    "da-tamil": { bg: "hsl(0 0% 100%)", border: "hsl(43 55% 40%)", text: "#0f172a" },
-    "da-spanisch": { bg: "hsl(0 0% 100%)", border: "hsl(58 60% 59%)", text: "#0f172a" },
-    "da-italienisch": { bg: "hsl(0 0% 100%)", border: "hsl(58 60% 59%)", text: "#0f172a" },
-  };
-
-  // ---------- Dynamischer Fallback (dein aktueller, guter Look) ----------
-  function colorsForNameFallback(name) {
-    const key = normalizeKey(name) || "unbekannt";
-
-    const palette = [
-      { h: 210, s: 22, l: 92 }, // Blau (sehr ruhig)
-      { h: 150, s: 20, l: 92 }, // Grün
-      { h: 35,  s: 24, l: 93 }, // Ocker
-      { h: 270, s: 18, l: 93 }, // Violett
-      { h: 195, s: 22, l: 92 }, // Petrol
-      { h: 120, s: 18, l: 93 }, // Salbei
-      { h: 245, s: 18, l: 92 }, // Indigo
-      { h: 20,  s: 22, l: 94 }, // Sand
-      { h: 210, s: 10, l: 94 }, // hellgrau-bläulich
-      { h: 215, s: 12, l: 38 }  // dunkelgrau-bläulich (weiß text)
-    ];
-
-    const hash = hashToHue(key);
-    const slot = palette[hash % palette.length];
-
-    const bg = `hsl(${slot.h} ${slot.s}% ${slot.l}%)`;
-    const border = `hsl(${slot.h} ${Math.min(40, slot.s + 10)}% ${
-      slot.l > 60 ? Math.max(55, slot.l - 22) : Math.min(50, slot.l + 6)
-    }%)`;
-    const text = pickTextColorForHsl(slot.h, slot.s, slot.l);
-
-    return { bg, text, border, source: "auto" };
-  }
-
-  function colorsForEvent(e) {
-    const vers = safeText(e.versammlung || 'unbekannt');
-    const key = normalizeKey(vers);
-
-    const mapped = COLOR_MAP[key];
-    if (mapped) {
-      if (mapped.type === "neutral") {
-        return { bg: "transparent", border: "#cbd5e1", text: "#0f172a", source: "fix" };
-      }
-      return {
-        bg: mapped.bg,
-        border: mapped.border || mapped.bg,
-        text: mapped.text || "#0f172a",
-        source: "fix"
-      };
-    }
-
-    return colorsForNameFallback(vers);
-  }
-
   function showStatus(type, msg) {
     const el = $('status');
     el.style.display = 'block';
@@ -562,6 +411,11 @@
       if ('Value' in v) return v.Value;
       if ('value' in v) return v.value;
     }
+    return String(v);
+  }
+
+  function safeText(v) {
+    if (v === null || v === undefined) return '';
     return String(v);
   }
 
@@ -593,53 +447,8 @@
     return new Intl.DateTimeFormat('de-DE', { year:'numeric', month:'2-digit', day:'2-digit' }).format(d);
   }
 
-  // ---------- Legend ----------
-  function renderLegend(raw) {
-    const tbody = $('legendBody');
-    if (!tbody) return;
-
-    const set = new Set();
-    raw.forEach(e => {
-      const v = safeText(e.versammlung).trim();
-      if (v) set.add(v);
-    });
-
-    const list = Array.from(set).sort((a, b) => a.localeCompare(b, 'de'));
-
-    tbody.innerHTML = list.map(name => {
-      const key = normalizeKey(name);
-
-      let c;
-      const mapped = COLOR_MAP[key];
-      if (mapped) {
-        if (mapped.type === "neutral") {
-          c = { bg: "transparent", border: "#cbd5e1", text: "#0f172a", source: "fix" };
-        } else {
-          c = { bg: mapped.bg, border: mapped.border || mapped.bg, text: mapped.text || "#0f172a", source: "fix" };
-        }
-      } else {
-        c = colorsForNameFallback(name);
-      }
-
-      const swatchStyle = [
-        `background:${c.bg};`,
-        `border:2px solid ${c.border};`,
-        `border-radius:8px;`,
-        `height:18px;`,
-        `width:46px;`,
-        `display:inline-block;`
-      ].join('');
-
-      const sourceLabel = c.source === "fix" ? "fix" : "auto";
-
-      return `
-        <tr>
-          <td><span style="${swatchStyle}"></span></td>
-          <td><span class="rowtitle">${safeText(name)}</span></td>
-          <td><span class="badge">${sourceLabel}</span></td>
-        </tr>
-      `;
-    }).join('');
+  function isSchliessdienst(e) {
+    return e && e.schliessdienst !== null && e.schliessdienst !== undefined && String(e.schliessdienst).trim() !== '';
   }
 
   // ---------- State ----------
@@ -677,8 +486,6 @@
       .map(e => {
         const fullTitle = toDisplayTitle(e);
         const mobileTitle = fullTitle.replace(/\s*\(Schließdienst\)\s*/i, '').trim();
-
-        const { bg, text, border } = colorsForEvent(e);
         const isSD = isSchliessdienst(e);
 
         return {
@@ -689,12 +496,7 @@
 
           display: 'block',
 
-          backgroundColor: bg,
-          borderColor: border,
-          textColor: text,
-
           classNames: isSD ? ['sd-event'] : [],
-
           extendedProps: e
         };
       });
@@ -786,9 +588,6 @@
       const isMobile = window.matchMedia('(max-width: 700px)').matches;
       allEventsRaw = await loadEvents();
 
-      // ✅ Legende initial
-      renderLegend(allEventsRaw);
-
       const calEl = $('calendar');
       calendar = new FullCalendar.Calendar(calEl, {
         initialView: 'dayGridMonth',
@@ -820,12 +619,9 @@
 
         events: buildCalendarEvents(allEventsRaw),
 
-        // ✅ Farben & Balken-Optik “hart” erzwingen
+        // Nur Balken-Optik sicherstellen (keine Farben setzen)
         eventDidMount: function(info) {
           info.el.style.display = 'block';
-          if (info.event.backgroundColor) info.el.style.backgroundColor = info.event.backgroundColor;
-          if (info.event.borderColor) info.el.style.borderColor = info.event.borderColor;
-          if (info.event.textColor) info.el.style.color = info.event.textColor;
         },
 
         datesSet: function() {
@@ -861,10 +657,6 @@
   $('btnRefresh').addEventListener('click', async () => {
     try {
       allEventsRaw = await loadEvents();
-
-      // ✅ Legende updaten
-      renderLegend(allEventsRaw);
-
       calendar.removeAllEvents();
       calendar.addEventSource(buildCalendarEvents(allEventsRaw));
       renderList(allEventsRaw);
