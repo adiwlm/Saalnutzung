@@ -516,12 +516,12 @@
   // ---------- Helpers ----------
   const $ = (id) => document.getElementById(id);
 
-  function show:
   function showStatus(type, msg) {
     const el = $('status');
     el.style.display = 'block';
     el.innerHTML = `<div class="${type === 'error' ? 'error' : ''}">${msg}</div>`;
   }
+
   function clearStatus() {
     const el = $('status');
     el.style.display = 'none';
