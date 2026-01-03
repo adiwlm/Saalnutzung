@@ -71,7 +71,6 @@
     border-radius: 12px; 
     padding: 4px;
     box-shadow: 0 1px 10px rgba(15,23,42,.04);
-    flex-wrap: wrap;
   }
 
   .seg button{
@@ -186,7 +185,6 @@
 
   /* ================= FullCalendar ================= */
 
-  /* Desktop: Kalender-Header zentrieren (prev/next links, Titel wirklich mittig) */
 @media (min-width: 701px){
   .fc .fc-header-toolbar{
     display: grid !important;
@@ -198,106 +196,61 @@
   .fc .fc-toolbar-chunk:nth-child(3){ justify-self: end; }
 }
 
-  
-  /* Dot-Events im Monatsraster in Balken verwandeln */
   .fc .fc-daygrid-dot-event { display: block !important; }
   .fc .fc-daygrid-event { display: block !important; }
-  /* ✅ Month/dayGrid: Zeit darf nicht abgeschnitten werden */
+
   .fc .fc-daygrid-event .fc-event-main,
   .fc .fc-daygrid-event .fc-event-main-frame {
     display: flex !important;
     align-items: center;
     min-width: 0;
   }
-  
-  /* Uhrzeit: nie schrumpfen / nie umbrechen */
+
   .fc .fc-daygrid-event .fc-event-time {
     flex: 0 0 auto !important;
     white-space: nowrap !important;
     margin-right: 6px;
   }
-  
-  /* Titel: darf kürzen, nicht die Uhrzeit */
+
   .fc .fc-daygrid-event .fc-event-title-container,
   .fc .fc-daygrid-event .fc-event-title {
     flex: 1 1 auto !important;
     min-width: 0;
   }
-  
-  /* ✅ SD-Events: nichts clippen */
+
   .fc .fc-event.sd-event {
     overflow: visible !important;
   }
 
   .fc .fc-daygrid-event-dot { display: none !important; }
 
-  /* Neutraler Look: Rahmen ja, Text immer dunkel */
-.fc .fc-event {
-  background: transparent !important;
-  border: 1px solid var(--line) !important;
-}
+  .fc .fc-event {
+    background: transparent !important;
+    border: 1px solid var(--line) !important;
+    cursor: pointer !important;
+  }
 
-/* Klickbar machen */
-.fc .fc-event {
-  cursor: pointer !important;
-}
-
-/* Hover-Feedback (Desktop) */
 @media (hover:hover) and (pointer:fine) {
   .fc .fc-event:hover {
     border-color: #94a3b8 !important;
     background: rgba(148,163,184,.10) !important;
   }
-}
-
-/* Active-Feedback (beim Klicken) */
-@media (hover:hover) and (pointer:fine) {
   .fc .fc-event:active {
     background: rgba(148,163,184,.16) !important;
   }
 }
 
-/* Text explizit setzen (alle relevanten Stellen) */
-.fc .fc-event,
-.fc .fc-event .fc-event-main,
-.fc .fc-event .fc-event-title,
-.fc .fc-event .fc-event-time {
-  color: var(--text) !important;
-}
-
-
-  /* Mobile-first: 1 Zeile */
-  .fc .fc-daygrid-event { 
-    white-space: nowrap !important; 
-    align-items: center; 
-  }
-  .fc .fc-daygrid-event .fc-event-title {
-    white-space: nowrap !important;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .fc .fc-event,
+  .fc .fc-event .fc-event-main,
+  .fc .fc-event .fc-event-title,
+  .fc .fc-event .fc-event-time {
+    color: var(--text) !important;
   }
 
-  /* Desktop: max. 2 Zeilen */
-  @media (min-width: 900px) {
-    .fc .fc-daygrid-event { 
-      white-space: normal !important; 
-      align-items: flex-start; 
-    }
-    .fc .fc-daygrid-event .fc-event-title {
-      white-space: normal !important;
-      line-height: 1.25;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-  }
-
-  /* Schließdienst: neutraler Rahmen + dezentes Pattern (ohne Farben) */
   .fc .fc-event.sd-event{
     position: relative;
     border-width: 2px !important;
-    border-color: #94a3b8 !important; /* neutral-grau */
+    border-color: #94a3b8 !important;
   }
 
   .fc .fc-event.sd-event::before{
@@ -319,10 +272,7 @@
     z-index: 1;
   }
 
-  /* ================= Mobile Optimierungen ================= */
-
   @media (max-width: 700px){
-
     .wrap { padding: 10px 12px; }
     h1 { font-size: 16px; }
     .seg button { padding: 6px 10px; }
@@ -348,26 +298,9 @@
       justify-content: center;
     }
 
-    /* Zeit weg */
     .fc .fc-event-time,
     .fc .fc-daygrid-event-time,
     .fc .fc-list-event-time { display: none !important; }
-
-    .fc .fc-daygrid-event .fc-event-main,
-    .fc .fc-timegrid-event .fc-event-main {
-      display: flex;
-      min-width: 0;
-    }
-
-    .fc .fc-event-title,
-    .fc .fc-event-title-container,
-    .fc .fc-event-title.fc-sticky {
-      flex: 1 1 auto;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap !important;
-    }
 
     #calendarWrap{
       overflow-x: auto;
@@ -407,7 +340,7 @@
       font-size: 0.85rem;
     }
   }
-  /* ================= Klick-/Active-State von Events deaktivieren ================= */
+
 .fc .fc-event:focus,
 .fc .fc-event.fc-event-selected,
 .fc .fc-event.fc-event-selected:before,
@@ -445,10 +378,6 @@
   box-shadow: 0 18px 60px rgba(15,23,42,.25);
   overflow: hidden;
   z-index: 1;
-}
-.modal__close,
-.modal__btn{
-  pointer-events: auto;
 }
 
 .modal__header{
@@ -505,26 +434,6 @@
   font-weight: 600;
 }
 
-.modal__footer{
-  display:flex;
-  justify-content:flex-end;
-  gap: 10px;
-  padding: 12px 16px;
-  border-top: 1px solid var(--line);
-  background: rgba(245,247,251,.55);
-}
-
-.modal__btn{
-  border: 1px solid var(--line);
-  background: var(--card);
-  color: var(--text);
-  border-radius: 12px;
-  padding: 10px 12px;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-/* Mobile: Modal höher platzieren */
 @media (max-width: 700px){
   .modal__panel{ top: 6vh; }
   .modal__k{ width: 96px; flex-basis: 96px; }
@@ -578,40 +487,21 @@
     <div class="footer">Bereitgestellt durch das IK-Darmstadt.</div>
   </section>
 
-  <!-- Reservierung (passwortgeschützt pro Session) -->
+  <!-- Reservierung -->
   <section id="viewReserve" class="card" style="display:none;">
     <div id="reserveGate">
-      <p class="hint" style="margin-top:0;">
-        Dieser Bereich ist passwortgeschützt.
-      </p>
+      <p class="hint" style="margin-top:0;">Dieser Bereich ist passwortgeschützt.</p>
 
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-        <input id="reservePw" type="password" placeholder="Passwort" style="padding:10px 12px; border-radius:12px; border:1px solid var(--line); min-width: 220px;">
+        <input id="reservePw" type="password" placeholder="Passwort"
+               style="padding:10px 12px; border-radius:12px; border:1px solid var(--line); min-width: 220px;">
         <button id="reserveUnlock" type="button" class="pill" style="cursor:pointer;">Öffnen</button>
         <span id="reserveMsg" class="hint" style="margin:0;"></span>
       </div>
-
-      <p class="hint">
-        Hinweis: Einfacher Zugriffsschutz (Frontend). Für echte Absicherung: z. B. Cloudflare Access.
-      </p>
     </div>
 
     <div id="reserveFrameWrap" style="display:none;">
-      <iframe
-        id="reserveFrame"
-        src="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=lPriCZKxRUKSb72XR780HjoyI86Wkx9Mgrs9WiNH5tdUQ0RTR0ZBN0kxNzE5SDVWR09GTDg3NjZFVy4u&embed=true"
-        style="width:100%; height: 85vh; border: 0; border-radius: 12px; max-width:100%; max-height:100vh;"
-        frameborder="0"
-        marginwidth="0"
-        marginheight="0"
-        allowfullscreen
-        webkitallowfullscreen
-        mozallowfullscreen
-        msallowfullscreen
-        loading="lazy"
-        referrerpolicy="no-referrer">
-      </iframe>
-
+      <div id="reserveFrameHolder"></div>
       <div class="footer" style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
         <span>Bereitgestellt durch das IK-Darmstadt.</span>
         <button id="reserveLock" type="button" class="pill" style="cursor:pointer;">Sperren</button>
@@ -626,6 +516,7 @@
   // ---------- Helpers ----------
   const $ = (id) => document.getElementById(id);
 
+  function show:
   function showStatus(type, msg) {
     const el = $('status');
     el.style.display = 'block';
@@ -636,53 +527,6 @@
     el.style.display = 'none';
     el.innerHTML = '';
   }
-
-  function openEventModal({ title, meta, rows }) {
-    const modal = $('eventModal');
-    const titleEl = $('eventModalTitle');
-    const metaEl = $('eventModalMeta');
-    const bodyEl = $('eventModalBody');
-
-    titleEl.textContent = title || 'Termin';
-    metaEl.textContent = meta || '';
-
-    bodyEl.innerHTML = rows.map(r => `
-      <div class="modal__row">
-        <div class="modal__k">${r.k}</div>
-        <div class="modal__v">${r.v}</div>
-      </div>
-    `).join('');
-
-    modal.classList.add('is-open');
-    modal.setAttribute('aria-hidden', 'false');
-
-    setTimeout(() => $('eventModalOk')?.focus(), 0);
-  }
-
-  function closeEventModal() {
-    const modal = $('eventModal');
-    if (!modal) return;
-    modal.classList.remove('is-open');
-    modal.setAttribute('aria-hidden', 'true');
-  }
-
-  document.addEventListener('click', (e) => {
-    const t = e.target;
-
-    if (t && t.getAttribute && t.getAttribute('data-close') === '1') {
-      closeEventModal();
-      return;
-    }
-
-    if (t && (t.id === 'eventModalClose' || t.closest?.('#eventModalClose'))) {
-      closeEventModal();
-      return;
-    }
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeEventModal();
-  });
 
   function choiceValue(v) {
     if (v === null || v === undefined) return null;
@@ -731,17 +575,36 @@
     return e && e.schliessdienst !== null && e.schliessdienst !== undefined && String(e.schliessdienst).trim() !== '';
   }
 
-  // ---------- Reservierung Passwort-Gate (pro Session) ----------
+  // ---------- Reservierung (Session Password) ----------
   const RESERVE_PASSWORD = "KSDarmstadt2025";
-  const RESERVE_FLAG_KEY = "reserve_unlocked"; // sessionStorage
+  const RESERVE_FLAG_KEY = "reserve_unlocked";
 
   function isReserveUnlocked() {
     return sessionStorage.getItem(RESERVE_FLAG_KEY) === "1";
   }
-
   function setReserveUnlocked(v) {
     if (v) sessionStorage.setItem(RESERVE_FLAG_KEY, "1");
     else sessionStorage.removeItem(RESERVE_FLAG_KEY);
+  }
+
+  function renderReserveIframe() {
+    const holder = $('reserveFrameHolder');
+    if (!holder) return;
+    if (holder.dataset.rendered === "1") return;
+
+    holder.innerHTML = `
+      <iframe
+        width="640px"
+        height="480px"
+        src="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=lPriCZKxRUKSb72XR780HjoyI86Wkx9Mgrs9WiNH5tdUQ0RTR0ZBN0kxNzE5SDVWR09GTDg3NjZFVy4u&embed=true"
+        frameborder="0"
+        marginwidth="0"
+        marginheight="0"
+        style="border: none; width:100%; height: 85vh; max-width:100%; max-height:100vh; border-radius:12px"
+        allowfullscreen webkitallowfullscreen mozallowfullscreen msallowfullscreen>
+      </iframe>
+    `;
+    holder.dataset.rendered = "1";
   }
 
   function syncReserveUI() {
@@ -750,21 +613,22 @@
     const frameWrap = $('reserveFrameWrap');
     const msg = $('reserveMsg');
 
-    if (!gate || !frameWrap) return;
-
-    gate.style.display = unlocked ? 'none' : 'block';
-    frameWrap.style.display = unlocked ? 'block' : 'none';
     if (msg) msg.textContent = '';
+
+    if (unlocked) {
+      gate.style.display = 'none';
+      frameWrap.style.display = 'block';
+      renderReserveIframe();
+    } else {
+      frameWrap.style.display = 'none';
+      gate.style.display = 'block';
+    }
   }
 
   function unlockReserve() {
     const pw = ($('reservePw')?.value || "").trim();
     const msg = $('reserveMsg');
-
-    if (!pw) {
-      if (msg) msg.textContent = "Bitte Passwort eingeben.";
-      return;
-    }
+    if (!pw) { if (msg) msg.textContent = "Bitte Passwort eingeben."; return; }
 
     if (pw === RESERVE_PASSWORD) {
       setReserveUnlocked(true);
@@ -806,7 +670,6 @@
     }));
   }
 
-  // Saal NICHT im Titel (nirgendwo). Mobile: "(Schließdienst)" raus.
   function buildCalendarEvents(raw) {
     const isMobile = window.matchMedia('(max-width: 700px)').matches;
 
@@ -819,7 +682,7 @@
 
         return {
           id: e.id ? String(e.id) : undefined,
-          title: isMobile ? mobile renderListTitle(mobileTitle) : fullTitle,
+          title: isMobile ? mobileTitle : fullTitle,
           start: e.start,
           end: e.end || null,
           display: 'block',
@@ -828,8 +691,6 @@
         };
       });
   }
-
-  function renderListTitle(t){ return t; } // placeholder to keep code tidy
 
   function renderList(raw) {
     const q = $('search').value.trim().toLowerCase();
@@ -868,7 +729,7 @@
 
     tbody.innerHTML = rows.map(e => {
       const datum = formatDateOnly(e.start);
-      const vers = safeText(e.versammlung) || '';
+      const vers = safeText(e.versammlung) || '—';
 
       return `
         <tr>
@@ -876,7 +737,7 @@
             <span class="rowtitle">${datum}</span>
             <span class="small"><span class="badge">Schließdienst</span></span>
           </td>
-          <td><span class="rowtitle">${vers || '—'}</span></td>
+          <td><span class="rowtitle">${vers}</span></td>
         </tr>
       `;
     }).join('');
@@ -946,12 +807,6 @@
           right: ''
         },
 
-        buttonText: {
-          dayGridMonth: 'Monat',
-          timeGridWeek: 'Woche',
-          timeGridDay: 'Tag'
-        },
-
         views: isMobile ? {
           dayGridMonth: { displayEventTime: false },
           timeGridWeek: { displayEventTime: false },
@@ -960,21 +815,7 @@
 
         eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
 
-        events: (allEventsRaw || []).filter(e => e.start).map(e => {
-          const fullTitle = toDisplayTitle(e);
-          const mobileTitle = fullTitle.replace(/\s*\(Schließdienst\)\s*/i, '').trim();
-          const isSD = isSchliessdienst(e);
-
-          return {
-            id: e.id ? String(e.id) : undefined,
-            title: isMobile ? mobileTitle : fullTitle,
-            start: e.start,
-            end: e.end || null,
-            display: 'block',
-            classNames: isSD ? ['sd-event'] : [],
-            extendedProps: e
-          };
-        }),
+        events: buildCalendarEvents(allEventsRaw),
 
         eventDidMount: function(info) {
           info.el.style.display = 'block';
@@ -1009,13 +850,48 @@
       calendar.render();
       centerMobileCalendar();
 
-      // Reservierung UI initial
-      syncReserveUI();
-
     } catch (err) {
       showStatus('error', `Fehler: ${safeText(err.message || err)}`);
     }
   }
+
+  // ---------- Modal ----------
+  function openEventModal({ title, meta, rows }) {
+    const modal = $('eventModal');
+    const titleEl = $('eventModalTitle');
+    const metaEl = $('eventModalMeta');
+    const bodyEl = $('eventModalBody');
+
+    titleEl.textContent = title || 'Termin';
+    metaEl.textContent = meta || '';
+
+    bodyEl.innerHTML = rows.map(r => `
+      <div class="modal__row">
+        <div class="modal__k">${r.k}</div>
+        <div class="modal__v">${r.v}</div>
+      </div>
+    `).join('');
+
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeEventModal() {
+    const modal = $('eventModal');
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  document.addEventListener('click', (e) => {
+    const t = e.target;
+    if (t && t.getAttribute && t.getAttribute('data-close') === '1') closeEventModal();
+    if (t && (t.id === 'eventModalClose' || t.closest?.('#eventModalClose'))) closeEventModal();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeEventModal();
+  });
 
   // ---------- UI wiring ----------
   $('btnCal').addEventListener('click', () => setView('cal'));
@@ -1023,26 +899,12 @@
   $('btnRes').addEventListener('click', () => setView('res'));
 
   $('search').addEventListener('input', () => renderList(allEventsRaw));
+
   $('btnRefresh').addEventListener('click', async () => {
     try {
       allEventsRaw = await loadEvents();
       calendar.removeAllEvents();
-      // rebuild events
-      const isMobile = window.matchMedia('(max-width: 700px)').matches;
-      calendar.addEventSource((allEventsRaw || []).filter(e => e.start).map(e => {
-        const fullTitle = toDisplayTitle(e);
-        const mobileTitle = fullTitle.replace(/\s*\(Schließdienst\)\s*/i, '').trim();
-        const isSD = isSchliessdienst(e);
-        return {
-          id: e.id ? String(e.id) : undefined,
-          title: isMobile ? mobileTitle : fullTitle,
-          start: e.start,
-          end: e.end || null,
-          display: 'block',
-          classNames: isSD ? ['sd-event'] : [],
-          extendedProps: e
-        };
-      }));
+      calendar.addEventSource(buildCalendarEvents(allEventsRaw));
       renderList(allEventsRaw);
       centerMobileCalendar();
     } catch (err) {
@@ -1050,13 +912,10 @@
     }
   });
 
-  // Reservierung Gate events (nach DOM verfügbar)
-  document.addEventListener('DOMContentLoaded', () => {
-    $('reserveUnlock')?.addEventListener('click', unlockReserve);
-    $('reserveLock')?.addEventListener('click', lockReserve);
-    $('reservePw')?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') unlockReserve();
-    });
+  $('reserveUnlock').addEventListener('click', unlockReserve);
+  $('reserveLock').addEventListener('click', lockReserve);
+  $('reservePw').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') unlockReserve();
   });
 
   init();
