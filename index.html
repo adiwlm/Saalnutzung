@@ -310,6 +310,10 @@
     background: #f5f3ff !important;
   }
 
+  .fc .fc-event.congress-event .fc-event-time{
+    display: none;
+  }
+
   @media (max-width: 700px){
     .wrap { padding: 10px 12px; }
     h1 { font-size: 16px; }
@@ -695,6 +699,10 @@
     return ['GM', 'RK', 'KK', 'SO'].includes(safeText(e?.ereignisart));
   }
 
+  function isCongress(e) {
+    return ['RK', 'KK'].includes(safeText(e?.ereignisart));
+  }
+
   function matchesOrganization(e) {
     return !selectedOrganization || safeText(e.versammlung) === selectedOrganization;
   }
@@ -818,7 +826,8 @@
           display: 'block',
           classNames: [
             ...(isSD ? ['sd-event'] : []),
-            ...(isSpecialEvent(e) ? ['special-event'] : [])
+            ...(isSpecialEvent(e) ? ['special-event'] : []),
+            ...(isCongress(e) ? ['congress-event'] : [])
           ],
           extendedProps: e
         };
