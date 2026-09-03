@@ -122,7 +122,7 @@
     border-radius: 10px;
     background: var(--card);
     color: var(--text);
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 750;
   }
 
@@ -494,7 +494,7 @@
 <header>
   <div class="wrap">
     <div class="topbar">
-      <h1>Königreichssaal Darmstadt</h1>
+      <h1>JWDarmstadt</h1>
       <div class="seg" role="tablist" aria-label="Ansicht">
         <button id="btnCal" class="active" type="button">Kalender</button>
         <button id="btnList" type="button">Schließdienst</button>
@@ -558,8 +558,7 @@
         <thead>
           <tr>
             <th>Datum</th>
-            <th>Termin</th>
-            <th>Versammlung</th>
+            <th>Termin / Versammlung</th>
           </tr>
         </thead>
         <tbody id="termsBody"></tbody>
@@ -670,9 +669,11 @@
   function toTermsTitle(e) {
     const organization = safeText(e.versammlung);
     const title = toDisplayTitle(e);
-    return organization && title.startsWith(organization)
+    const term = organization && title.startsWith(organization)
       ? title.slice(organization.length).trim()
       : title;
+
+    return organization ? `${term} ${organization}`.trim() : term;
   }
 
   function formatDateTime(iso) {
@@ -901,7 +902,7 @@
     const tbody = $('termsBody');
 
     if (rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="3" style="color:var(--muted); padding:14px;">Keine kommenden besonderen Termine.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="2" style="color:var(--muted); padding:14px;">Keine kommenden besonderen Termine.</td></tr>`;
       return;
     }
 
@@ -909,7 +910,6 @@
       <tr>
         <td><span class="rowtitle">${escapeHtml(formatDateOnly(e.start))}</span></td>
         <td><span class="rowtitle">${escapeHtml(toTermsTitle(e))}</span></td>
-        <td><span class="rowtitle">${escapeHtml(e.versammlung || '—')}</span></td>
       </tr>
     `).join('');
   }
