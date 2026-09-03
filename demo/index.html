@@ -10,11 +10,6 @@
   </style>
 </head>
 <body>
-  <iframe id="calendarDemo" title="Kalender-Vorschau"></iframe>
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    params.set('demo', '1');
-    document.getElementById('calendarDemo').src = `../index.html?${params.toString()}`;
-  </script>
+  <iframe title="Kalender-Vorschau" src="../index.html?demo=1"></iframe>
 </body>
 </html>

@@ -105,20 +105,25 @@
 
   .organization-filter{
     display: none;
-    gap: 6px;
+    width: 100%;
+    gap: 10px;
     align-items: center;
+    justify-content: center;
+    margin-top: 10px;
     color: var(--muted);
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 600;
   }
 
   .organization-filter select{
-    max-width: 190px;
-    padding: 8px 10px;
+    max-width: 250px;
+    padding: 9px 12px;
     border: 1px solid var(--line);
     border-radius: 10px;
     background: var(--card);
     color: var(--text);
+    font-size: 16px;
+    font-weight: 750;
   }
 
   /* ================= Cards & Tables ================= */
@@ -487,13 +492,16 @@
 
 <body>
 <header>
-  <div class="wrap topbar">
-    <h1>Königreichssaal Darmstadt</h1>
-    <div class="seg" role="tablist" aria-label="Ansicht">
-      <button id="btnCal" class="active" type="button">Kalender</button>
-      <button id="btnList" type="button">Schließdienst</button>
-      <button id="btnRes" type="button">Reservierung</button>
-      <button id="btnTerms" type="button" hidden>Termine</button>
+  <div class="wrap">
+    <div class="topbar">
+      <h1>Königreichssaal Darmstadt</h1>
+      <div class="seg" role="tablist" aria-label="Ansicht">
+        <button id="btnCal" class="active" type="button">Kalender</button>
+        <button id="btnList" type="button">Schließdienst</button>
+        <button id="btnRes" type="button">Reservierung</button>
+        <button id="btnTerms" type="button" hidden>Termine</button>
+      </div>
+      <a id="portalLink" class="portal-link" href="https://portal.jwdarmstadt.de" hidden>Portal</a>
     </div>
     <label id="organizationFilterWrap" class="organization-filter">
       Versammlung
@@ -501,7 +509,6 @@
         <option value="">Alle</option>
       </select>
     </label>
-    <a id="portalLink" class="portal-link" href="https://portal.jwdarmstadt.de" hidden>Portal</a>
   </div>
 </header>
 
@@ -518,10 +525,9 @@
   <section id="viewList" class="card" style="display:none;">
     <div class="toolbar">
       <div class="search">
-        <input id="search" type="search" placeholder="Suche (Versammlung/Datum) …" />
+        <input id="search" type="search" placeholder="Suche (Datum) …" />
       </div>
       <span id="countPill" class="pill">0 Schließdienst-Termine</span>
-      <button id="btnRefresh" type="button" class="pill" style="cursor:pointer;">Neu laden</button>
     </div>
 
     <div style="overflow:auto;">
@@ -545,7 +551,6 @@
         <strong>Besondere Termine</strong>
         <p class="hint">Kommende Dienstwochen, Kongresse und weitere besondere Termine.</p>
       </div>
-      <span id="termsCountPill" class="pill">0 Termine</span>
     </div>
 
     <div style="overflow:auto;">
@@ -554,6 +559,7 @@
           <tr>
             <th>Datum</th>
             <th>Termin</th>
+            <th>Versammlung</th>
           </tr>
         </thead>
         <tbody id="termsBody"></tbody>
@@ -591,10 +597,9 @@
 <script>
   // ---------- Helpers ----------
   const $ = (id) => document.getElementById(id);
-  const pageParams = new URLSearchParams(window.location.search);
-  const isDemo = pageParams.get('demo') === '1';
+  const isDemo = new URLSearchParams(window.location.search).get('demo') === '1';
   const DEMO_EVENTS_URL = 'https://portal.jwdarmstadt.de/api/public/events';
-  let selectedOrganization = pageParams.get('versammlung') || '';
+  let selectedOrganization = '';
 
   function showStatus(type, msg) {
     const el = $('status');
@@ -891,11 +896,10 @@
       .filter(e => e.start && new Date(e.start).getTime() >= new Date().setHours(0, 0, 0, 0))
       .sort((a, b) => new Date(a.start) - new Date(b.start));
 
-    $('termsCountPill').textContent = `${rows.length} Termine`;
     const tbody = $('termsBody');
 
     if (rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="2" style="color:var(--muted); padding:14px;">Keine kommenden besonderen Termine.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="3" style="color:var(--muted); padding:14px;">Keine kommenden besonderen Termine.</td></tr>`;
       return;
     }
 
@@ -903,6 +907,7 @@
       <tr>
         <td><span class="rowtitle">${escapeHtml(formatDateOnly(e.start))}</span></td>
         <td><span class="rowtitle">${escapeHtml(toTermsTitle(e))}</span></td>
+        <td><span class="rowtitle">${escapeHtml(e.versammlung || '—')}</span></td>
       </tr>
     `).join('');
   }
@@ -978,22 +983,6 @@
 
   function updateOrganizationFilter(value) {
     selectedOrganization = value;
-    const url = new URL(window.location.href);
-    if (value) url.searchParams.set('versammlung', value);
-    else url.searchParams.delete('versammlung');
-    window.history.replaceState({}, '', url);
-
-    if (isDemo && window.top !== window) {
-      try {
-        const outerUrl = new URL(window.top.location.href);
-        if (value) outerUrl.searchParams.set('versammlung', value);
-        else outerUrl.searchParams.delete('versammlung');
-        window.top.history.replaceState({}, '', outerUrl);
-      } catch (_) {
-        // The shared filter still works if the embedding page is on another origin.
-      }
-    }
-
     calendar.removeAllEvents();
     calendar.addEventSource(buildCalendarEvents(allEventsRaw));
     renderList(allEventsRaw);
@@ -1112,7 +1101,7 @@
     $('btnRes').hidden = true;
     $('btnTerms').hidden = false;
     $('portalLink').hidden = false;
-    $('organizationFilterWrap').style.display = 'inline-flex';
+    $('organizationFilterWrap').style.display = 'flex';
   }
 
   $('btnCal').addEventListener('click', () => setView('cal'));
@@ -1125,7 +1114,7 @@
 
   $('search').addEventListener('input', () => renderList(allEventsRaw));
 
-  $('btnRefresh').addEventListener('click', async () => {
+  $('btnRefresh')?.addEventListener('click', async () => {
     try {
       allEventsRaw = await loadEvents();
       if (isDemo) setupOrganizationFilter(allEventsRaw);
