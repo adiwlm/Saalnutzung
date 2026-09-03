@@ -655,10 +655,6 @@
     const organization = safeText(e.versammlung);
     const type = safeText(e.ereignisart);
 
-    if (safeText(e.sourceType) === 'MANUAL_EVENT') {
-      return toDisplayTitle(e);
-    }
-
     if (['RK', 'KK'].includes(type)) {
       return [organization, 'Kongress'].filter(Boolean).join(' ');
     }
@@ -669,7 +665,7 @@
       BS: 'BS',
       SCH: 'Schule',
       GM: 'GDM',
-      SO: 'Dienstwoche',
+      SO: safeText(e.sourceType) === 'MANUAL_EVENT' ? 'Sondertermin' : 'Dienstwoche',
     }[type];
 
     return [label || type, organization].filter(Boolean).join(' ') || toDisplayTitle(e);
