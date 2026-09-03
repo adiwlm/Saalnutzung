@@ -325,27 +325,32 @@
     .seg button { padding: 6px 10px; }
 
     .topbar{
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      min-height: 0;
-    }
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px 10px;
+        justify-content: initial;
+        min-height: 0;
+      }
 
     .topbar h1{
-      position: static;
-      transform: none;
-      width: 100%;
-      text-align: center;
-      white-space: normal;
-      line-height: 1.2;
-    }
+        position: static;
+        transform: none;
+        width: auto;
+        text-align: left;
+        white-space: normal;
+        line-height: 1.2;
+        grid-column: 1;
+        grid-row: 1;
+      }
 
     .topbar .seg{
-      width: 100%;
-      justify-content: center;
-    }
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: 100%;
+        justify-content: center;
+      }
 
-    .portal-link{ margin-left: 0; }
+    .portal-link{ margin-left: 0; grid-column: 2; grid-row: 1; }
 
     .fc .fc-event-time,
     .fc .fc-daygrid-event-time,
