@@ -597,9 +597,11 @@
 <script>
   // ---------- Helpers ----------
   const $ = (id) => document.getElementById(id);
-  const isDemo = new URLSearchParams(window.location.search).get('demo') === '1';
+  const pageParams = new URLSearchParams(window.location.search);
+  const isDemo = pageParams.get('demo') === '1';
   const DEMO_EVENTS_URL = 'https://portal.jwdarmstadt.de/api/public/events';
-  let selectedOrganization = '';
+  let sharedTermsOrganization = isDemo ? (pageParams.get('termine') || '') : '';
+  let selectedOrganization = sharedTermsOrganization;
 
   function showStatus(type, msg) {
     const el = $('status');
@@ -983,6 +985,18 @@
 
   function updateOrganizationFilter(value) {
     selectedOrganization = value;
+    sharedTermsOrganization = '';
+
+    if (isDemo && window.top !== window) {
+      try {
+        const outerUrl = new URL(window.top.location.href);
+        outerUrl.searchParams.delete('termine');
+        window.top.history.replaceState({}, '', outerUrl);
+      } catch (_) {
+        // The filter itself works even if the embedding page is on another origin.
+      }
+    }
+
     calendar.removeAllEvents();
     calendar.addEventSource(buildCalendarEvents(allEventsRaw));
     renderList(allEventsRaw);
@@ -1051,6 +1065,8 @@
 
       calendar.render();
       centerMobileCalendar();
+
+      if (sharedTermsOrganization) setView('terms');
 
     } catch (err) {
       showStatus('error', `Fehler: ${safeText(err.message || err)}`);
