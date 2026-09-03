@@ -103,6 +103,24 @@
 
   .portal-link:hover{ background: var(--bg); }
 
+  .organization-filter{
+    display: none;
+    gap: 6px;
+    align-items: center;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .organization-filter select{
+    max-width: 190px;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--text);
+  }
+
   /* ================= Cards & Tables ================= */
 
   main .card{
@@ -473,6 +491,12 @@
       <button id="btnRes" type="button">Reservierung</button>
       <button id="btnTerms" type="button" hidden>Termine</button>
     </div>
+    <label id="organizationFilterWrap" class="organization-filter">
+      Versammlung
+      <select id="organizationFilter" aria-label="Versammlung filtern">
+        <option value="">Alle</option>
+      </select>
+    </label>
     <a id="portalLink" class="portal-link" href="https://portal.jwdarmstadt.de" hidden>Portal</a>
   </div>
 </header>
@@ -526,7 +550,6 @@
           <tr>
             <th>Datum</th>
             <th>Termin</th>
-            <th>Versammlung</th>
           </tr>
         </thead>
         <tbody id="termsBody"></tbody>
@@ -564,8 +587,10 @@
 <script>
   // ---------- Helpers ----------
   const $ = (id) => document.getElementById(id);
-  const isDemo = new URLSearchParams(window.location.search).get('demo') === '1';
+  const pageParams = new URLSearchParams(window.location.search);
+  const isDemo = pageParams.get('demo') === '1';
   const DEMO_EVENTS_URL = 'https://portal.jwdarmstadt.de/api/public/events';
+  let selectedOrganization = pageParams.get('versammlung') || '';
 
   function showStatus(type, msg) {
     const el = $('status');
@@ -611,6 +636,34 @@
     return safeText(e.title || e.titel || e.versammlung || e.raum || e.name || 'Termin');
   }
 
+  function toCalendarTitle(e) {
+    const organization = safeText(e.versammlung);
+    const type = safeText(e.ereignisart);
+
+    if (['RK', 'KK'].includes(type)) {
+      return [organization, 'Kongress'].filter(Boolean).join(' ');
+    }
+
+    const label = {
+      ZK: 'ZK',
+      TP: 'TP',
+      BS: 'BS',
+      SCH: 'Schule',
+      GM: 'Gedächtnismahl',
+      SO: 'Dienstwoche',
+    }[type];
+
+    return [label || type, organization].filter(Boolean).join(' ') || toDisplayTitle(e);
+  }
+
+  function toTermsTitle(e) {
+    const organization = safeText(e.versammlung);
+    const title = toDisplayTitle(e);
+    return organization && title.startsWith(organization)
+      ? title.slice(organization.length).trim()
+      : title;
+  }
+
   function formatDateTime(iso) {
     if (!iso) return '';
     const d = new Date(iso);
@@ -628,12 +681,26 @@
     return new Intl.DateTimeFormat('de-DE', { year:'numeric', month:'2-digit', day:'2-digit' }).format(d);
   }
 
+  function formatClosingServiceDate(iso) {
+    const date = formatDateOnly(iso);
+    const time = formatDateTime(iso).split(', ')[1] || '';
+    return time ? `${date}, ${time}` : date;
+  }
+
   function isSchliessdienst(e) {
     return e && e.schliessdienst !== null && e.schliessdienst !== undefined && String(e.schliessdienst).trim() !== '';
   }
 
   function isSpecialEvent(e) {
     return ['GM', 'RK', 'KK', 'SO'].includes(safeText(e?.ereignisart));
+  }
+
+  function matchesOrganization(e) {
+    return !selectedOrganization || safeText(e.versammlung) === selectedOrganization;
+  }
+
+  function visibleEvents(raw) {
+    return raw.filter(matchesOrganization);
   }
 
   // ---------- Reservierung (Session Password) ----------
@@ -736,10 +803,10 @@
   function buildCalendarEvents(raw) {
     const isMobile = window.matchMedia('(max-width: 700px)').matches;
 
-    return raw
+    return visibleEvents(raw)
       .filter(e => e.start)
       .map(e => {
-        const fullTitle = toDisplayTitle(e);
+        const fullTitle = toCalendarTitle(e);
         const mobileTitle = fullTitle.replace(/\s*\(Schließdienst\)\s*/i, '').trim();
         const isSD = isSchliessdienst(e);
 
@@ -764,7 +831,7 @@
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const rows = raw
+    const rows = visibleEvents(raw)
       .filter(isSchliessdienst)
       .filter(e => {
         if (!e.start) return false;
@@ -794,7 +861,7 @@
     }
 
     tbody.innerHTML = rows.map(e => {
-      const datum = formatDateOnly(e.start);
+      const datum = formatClosingServiceDate(e.start);
       const vers = safeText(e.versammlung) || '—';
 
       return `
@@ -810,7 +877,7 @@
   }
 
   function renderTerms(raw) {
-    const rows = raw
+    const rows = visibleEvents(raw)
       .filter(isSpecialEvent)
       .filter(e => e.start && new Date(e.start).getTime() >= new Date().setHours(0, 0, 0, 0))
       .sort((a, b) => new Date(a.start) - new Date(b.start));
@@ -819,15 +886,14 @@
     const tbody = $('termsBody');
 
     if (rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="3" style="color:var(--muted); padding:14px;">Keine kommenden besonderen Termine.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="2" style="color:var(--muted); padding:14px;">Keine kommenden besonderen Termine.</td></tr>`;
       return;
     }
 
     tbody.innerHTML = rows.map(e => `
       <tr>
         <td><span class="rowtitle">${escapeHtml(formatDateOnly(e.start))}</span></td>
-        <td><span class="rowtitle">${escapeHtml(toDisplayTitle(e))}</span></td>
-        <td><span class="rowtitle">${escapeHtml(e.versammlung || '—')}</span></td>
+        <td><span class="rowtitle">${escapeHtml(toTermsTitle(e))}</span></td>
       </tr>
     `).join('');
   }
@@ -888,10 +954,48 @@
     }
   }
 
+  function setupOrganizationFilter(raw) {
+    const select = $('organizationFilter');
+    const names = [...new Set(raw.map(e => safeText(e.versammlung)).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, 'de'));
+
+    select.innerHTML = '<option value="">Alle</option>' + names
+      .map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`)
+      .join('');
+
+    if (!names.includes(selectedOrganization)) selectedOrganization = '';
+    select.value = selectedOrganization;
+  }
+
+  function updateOrganizationFilter(value) {
+    selectedOrganization = value;
+    const url = new URL(window.location.href);
+    if (value) url.searchParams.set('versammlung', value);
+    else url.searchParams.delete('versammlung');
+    window.history.replaceState({}, '', url);
+
+    if (isDemo && window.top !== window) {
+      try {
+        const outerUrl = new URL(window.top.location.href);
+        if (value) outerUrl.searchParams.set('versammlung', value);
+        else outerUrl.searchParams.delete('versammlung');
+        window.top.history.replaceState({}, '', outerUrl);
+      } catch (_) {
+        // The shared filter still works if the embedding page is on another origin.
+      }
+    }
+
+    calendar.removeAllEvents();
+    calendar.addEventSource(buildCalendarEvents(allEventsRaw));
+    renderList(allEventsRaw);
+    renderTerms(allEventsRaw);
+  }
+
   async function init() {
     try {
       const isMobile = window.matchMedia('(max-width: 700px)').matches;
       allEventsRaw = await loadEvents();
+      if (isDemo) setupOrganizationFilter(allEventsRaw);
 
       const calEl = $('calendar');
       calendar = new FullCalendar.Calendar(calEl, {
@@ -999,18 +1103,23 @@
     $('btnRes').hidden = true;
     $('btnTerms').hidden = false;
     $('portalLink').hidden = false;
+    $('organizationFilterWrap').style.display = 'inline-flex';
   }
 
   $('btnCal').addEventListener('click', () => setView('cal'));
   $('btnList').addEventListener('click', () => setView('list'));
   $('btnRes').addEventListener('click', () => setView('res'));
   $('btnTerms').addEventListener('click', () => setView('terms'));
+  $('organizationFilter').addEventListener('change', (event) => {
+    updateOrganizationFilter(event.target.value);
+  });
 
   $('search').addEventListener('input', () => renderList(allEventsRaw));
 
   $('btnRefresh').addEventListener('click', async () => {
     try {
       allEventsRaw = await loadEvents();
+      if (isDemo) setupOrganizationFilter(allEventsRaw);
       calendar.removeAllEvents();
       calendar.addEventSource(buildCalendarEvents(allEventsRaw));
       renderList(allEventsRaw);
