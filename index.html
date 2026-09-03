@@ -88,6 +88,21 @@
     color: var(--text); 
   }
 
+  .portal-link{
+    margin-left: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--text);
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 1px 10px rgba(15,23,42,.04);
+  }
+
+  .portal-link:hover{ background: var(--bg); }
+
   /* ================= Cards & Tables ================= */
 
   main .card{
@@ -272,6 +287,11 @@
     z-index: 1;
   }
 
+  .fc .fc-event.special-event{
+    border-color: #7c3aed !important;
+    background: #f5f3ff !important;
+  }
+
   @media (max-width: 700px){
     .wrap { padding: 10px 12px; }
     h1 { font-size: 16px; }
@@ -297,6 +317,8 @@
       width: 100%;
       justify-content: center;
     }
+
+    .portal-link{ margin-left: 0; }
 
     .fc .fc-event-time,
     .fc .fc-daygrid-event-time,
@@ -449,7 +471,9 @@
       <button id="btnCal" class="active" type="button">Kalender</button>
       <button id="btnList" type="button">Schließdienst</button>
       <button id="btnRes" type="button">Reservierung</button>
+      <button id="btnTerms" type="button" hidden>Termine</button>
     </div>
+    <a id="portalLink" class="portal-link" href="https://portal.jwdarmstadt.de" hidden>Portal</a>
   </div>
 </header>
 
@@ -487,6 +511,31 @@
     <div class="footer">Bereitgestellt durch das IK-Darmstadt.</div>
   </section>
 
+  <section id="viewTerms" class="card" style="display:none;">
+    <div class="toolbar">
+      <div>
+        <strong>Besondere Termine</strong>
+        <p class="hint">Kommende Dienstwochen, Kongresse und weitere besondere Termine.</p>
+      </div>
+      <span id="termsCountPill" class="pill">0 Termine</span>
+    </div>
+
+    <div style="overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Termin</th>
+            <th>Versammlung</th>
+          </tr>
+        </thead>
+        <tbody id="termsBody"></tbody>
+      </table>
+    </div>
+
+    <div class="footer">Bereitgestellt durch das IK-Darmstadt.</div>
+  </section>
+
   <!-- Reservierung -->
   <section id="viewReserve" class="card" style="display:none;">
     <div id="reserveGate">
@@ -515,6 +564,8 @@
 <script>
   // ---------- Helpers ----------
   const $ = (id) => document.getElementById(id);
+  const isDemo = new URLSearchParams(window.location.search).get('demo') === '1';
+  const DEMO_EVENTS_URL = 'https://portal.jwdarmstadt.de/api/public/events';
 
   function showStatus(type, msg) {
     const el = $('status');
@@ -541,6 +592,12 @@
   function safeText(v) {
     if (v === null || v === undefined) return '';
     return String(v);
+  }
+
+  function escapeHtml(v) {
+    return safeText(v).replace(/[&<>'"]/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[c]));
   }
 
   function parseEventsPayload(json) {
@@ -573,6 +630,10 @@
 
   function isSchliessdienst(e) {
     return e && e.schliessdienst !== null && e.schliessdienst !== undefined && String(e.schliessdienst).trim() !== '';
+  }
+
+  function isSpecialEvent(e) {
+    return ['GM', 'RK', 'KK', 'SO'].includes(safeText(e?.ereignisart));
   }
 
   // ---------- Reservierung (Session Password) ----------
@@ -650,9 +711,11 @@
 
   async function loadEvents() {
     clearStatus();
-    const url = `./events.json?cb=${Date.now()}`;
+    const url = isDemo
+      ? `${DEMO_EVENTS_URL}?cb=${Date.now()}`
+      : `./events.json?cb=${Date.now()}`;
     const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`events.json konnte nicht geladen werden (HTTP ${res.status})`);
+    if (!res.ok) throw new Error(`Termine konnten nicht geladen werden (HTTP ${res.status})`);
     const json = await res.json();
     const arr = parseEventsPayload(json);
 
@@ -686,7 +749,10 @@
           start: e.start,
           end: e.end || null,
           display: 'block',
-          classNames: isSD ? ['sd-event'] : [],
+          classNames: [
+            ...(isSD ? ['sd-event'] : []),
+            ...(isSpecialEvent(e) ? ['special-event'] : [])
+          ],
           extendedProps: e
         };
       });
@@ -743,27 +809,61 @@
     }).join('');
   }
 
+  function renderTerms(raw) {
+    const rows = raw
+      .filter(isSpecialEvent)
+      .filter(e => e.start && new Date(e.start).getTime() >= new Date().setHours(0, 0, 0, 0))
+      .sort((a, b) => new Date(a.start) - new Date(b.start));
+
+    $('termsCountPill').textContent = `${rows.length} Termine`;
+    const tbody = $('termsBody');
+
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="3" style="color:var(--muted); padding:14px;">Keine kommenden besonderen Termine.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map(e => `
+      <tr>
+        <td><span class="rowtitle">${escapeHtml(formatDateOnly(e.start))}</span></td>
+        <td><span class="rowtitle">${escapeHtml(toDisplayTitle(e))}</span></td>
+        <td><span class="rowtitle">${escapeHtml(e.versammlung || '—')}</span></td>
+      </tr>
+    `).join('');
+  }
+
   function setView(which) {
     const cal = $('viewCalendar');
     const list = $('viewList');
     const res  = $('viewReserve');
+    const terms = $('viewTerms');
 
     const btnCal = $('btnCal');
     const btnList = $('btnList');
     const btnRes = $('btnRes');
+    const btnTerms = $('btnTerms');
 
     cal.style.display = 'none';
     list.style.display = 'none';
     res.style.display = 'none';
+    terms.style.display = 'none';
 
     btnCal.classList.remove('active');
     btnList.classList.remove('active');
     btnRes.classList.remove('active');
+    btnTerms.classList.remove('active');
 
     if (which === 'list') {
       list.style.display = 'block';
       btnList.classList.add('active');
       renderList(allEventsRaw);
+      return;
+    }
+
+    if (which === 'terms') {
+      terms.style.display = 'block';
+      btnTerms.classList.add('active');
+      renderTerms(allEventsRaw);
       return;
     }
 
@@ -894,9 +994,17 @@
   });
 
   // ---------- UI wiring ----------
+  if (isDemo) {
+    document.title = 'Königreichssaal Darmstadt – Vorschau';
+    $('btnRes').hidden = true;
+    $('btnTerms').hidden = false;
+    $('portalLink').hidden = false;
+  }
+
   $('btnCal').addEventListener('click', () => setView('cal'));
   $('btnList').addEventListener('click', () => setView('list'));
   $('btnRes').addEventListener('click', () => setView('res'));
+  $('btnTerms').addEventListener('click', () => setView('terms'));
 
   $('search').addEventListener('input', () => renderList(allEventsRaw));
 
