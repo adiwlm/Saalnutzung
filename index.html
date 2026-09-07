@@ -613,7 +613,6 @@
       <div class="search">
         <input id="search" type="search" placeholder="Suche (Datum) …" />
       </div>
-      <span id="countPill" class="pill">0 Schließdienst-Termine</span>
     </div>
 
     <div style="overflow:auto;">
@@ -954,8 +953,6 @@
         ].join(' ').toLowerCase();
         return hay.includes(q);
       });
-
-    $('countPill').textContent = `${rows.length} Schließdienst-Termine`;
 
     const tbody = $('listBody');
     if (rows.length === 0) {
