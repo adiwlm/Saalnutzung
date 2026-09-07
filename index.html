@@ -15,6 +15,9 @@
     --text:#0f172a; 
     --muted:#475569; 
     --line:#e2e8f0; 
+    --control-hover:#eef2f7;
+    --control-active:#1f2937;
+    --focus:#64748b;
   }
 
   * { box-sizing: border-box; }
@@ -66,42 +69,45 @@
 
   .seg {
     display:inline-flex; 
-    background: var(--card);
-    border:1px solid var(--line); 
-    border-radius: 12px; 
-    padding: 4px;
-    box-shadow: 0 1px 10px rgba(15,23,42,.04);
+    gap: 2px;
+    background: transparent;
+    border: 0;
+    padding: 2px;
   }
 
   .seg button{
-    border:0; 
+    border: 1px solid transparent;
     background:transparent; 
-    padding: 8px 12px; 
-    border-radius: 10px;
+    padding: 8px 11px;
+    border-radius: 7px;
     cursor:pointer; 
-    font-weight: 600; 
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
     color: var(--muted);
+    transition: color .16s ease, background-color .16s ease, border-color .16s ease;
   }
 
   .seg button.active{ 
-    background: var(--bg); 
-    color: var(--text); 
+    background: var(--control-active);
+    border-color: var(--control-active);
+    color: #fff;
   }
 
   .portal-link{
     margin-left: auto;
     border: 1px solid var(--line);
-    border-radius: 10px;
-    background: var(--card);
+    border-radius: 7px;
+    background: transparent;
     color: var(--text);
     padding: 8px 12px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     text-decoration: none;
-    box-shadow: 0 1px 10px rgba(15,23,42,.04);
+    transition: background-color .16s ease, border-color .16s ease;
   }
 
-  .portal-link:hover{ background: var(--bg); }
+  .portal-link:hover{ background: var(--control-hover); border-color: #cbd5e1; }
 
   .organization-filter{
     display: none;
@@ -119,11 +125,41 @@
     max-width: 250px;
     padding: 9px 12px;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 7px;
     background: var(--card);
     color: var(--text);
     font-size: 15px;
     font-weight: 750;
+    cursor: pointer;
+    outline: none;
+    transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
+  }
+
+  .organization-filter select:hover{
+    background: var(--control-hover);
+    border-color: #cbd5e1;
+  }
+
+  .seg button:focus-visible,
+  .portal-link:focus-visible,
+  .organization-filter select:focus-visible,
+  .fc .fc-button:focus-visible{
+    outline: 2px solid var(--focus) !important;
+    outline-offset: 2px;
+    box-shadow: none !important;
+  }
+
+  @media (hover:hover) and (pointer:fine) {
+    .seg button:not(.active):hover{
+      color: var(--text);
+      background: var(--control-hover);
+      border-color: var(--line);
+    }
+  }
+
+  .seg button:active,
+  .portal-link:active{
+    transform: translateY(1px);
   }
 
   /* ================= Cards & Tables ================= */
@@ -222,6 +258,40 @@
   }
 
   /* ================= FullCalendar ================= */
+
+  .fc{
+    --fc-button-bg-color: transparent;
+    --fc-button-border-color: var(--line);
+    --fc-button-text-color: var(--muted);
+    --fc-button-hover-bg-color: var(--control-hover);
+    --fc-button-hover-border-color: #cbd5e1;
+    --fc-button-active-bg-color: var(--control-active);
+    --fc-button-active-border-color: var(--control-active);
+  }
+
+  .fc .fc-button-primary{
+    border-radius: 7px;
+    box-shadow: none !important;
+    font-weight: 500;
+    transition: color .16s ease, background-color .16s ease, border-color .16s ease;
+  }
+
+  .fc .fc-button-primary:not(:disabled):hover{
+    color: var(--text);
+  }
+
+  .fc .fc-button-primary:disabled{
+    background: var(--bg);
+    border-color: var(--line);
+    color: #94a3b8;
+    opacity: 1;
+  }
+
+  .fc .fc-toolbar-title{
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
 
 @media (min-width: 701px){
   .fc .fc-header-toolbar{
