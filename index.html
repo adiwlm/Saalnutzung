@@ -317,7 +317,7 @@
   .fc .fc-daygrid-event .fc-event-time {
     flex: 0 0 auto !important;
     white-space: nowrap !important;
-    margin-right: 6px;
+    margin-right: 3px;
   }
 
   .fc .fc-daygrid-event .fc-event-title-container,
@@ -355,6 +355,12 @@
     color: var(--text) !important;
   }
 
+  .fc .fc-event .fc-event-main{
+    font-family:"Aptos Narrow", "Arial Narrow", Aptos, Arial, sans-serif;
+    font-stretch:condensed;
+    letter-spacing:-.015em;
+  }
+
   .fc .fc-event.sd-event{
     position: relative;
     border-width: 2px !important;
@@ -383,6 +389,11 @@
   .fc .fc-event.special-event{
     border-color: #7c3aed !important;
     background: #f5f3ff !important;
+    overflow: visible !important;
+  }
+
+  .fc .fc-event.special-event .fc-event-main{
+    overflow: visible !important;
   }
 
   .fc .fc-event.congress-event .fc-event-time{
@@ -779,7 +790,7 @@
   }
 
   function isSpecialEvent(e) {
-    return ['GM', 'RK', 'KK', 'SO'].includes(safeText(e?.ereignisart));
+    return ['GM', 'RK', 'KK', 'SO', 'SCH'].includes(safeText(e?.ereignisart));
   }
 
   function isCongress(e) {
