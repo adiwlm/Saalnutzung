@@ -770,6 +770,10 @@
     const organization = safeText(e.versammlung);
     const type = safeText(e.ereignisart);
 
+    if (safeText(e.sourceType) === 'GLOBAL_EVENT') {
+      return toDisplayTitle(e);
+    }
+
     if (['RK', 'KK'].includes(type)) {
       return [organization, 'Kongress'].filter(Boolean).join(' ');
     }
@@ -832,7 +836,7 @@
   }
 
   function matchesOrganization(e) {
-    return !selectedOrganization || safeText(e.versammlung) === selectedOrganization;
+    return safeText(e.sourceType) === 'GLOBAL_EVENT' || !selectedOrganization || safeText(e.versammlung) === selectedOrganization;
   }
 
   function visibleEvents(raw) {
@@ -1169,7 +1173,7 @@
             title,
             meta,
             rows: [
-              { k: 'Versammlung', v: safeText(e.versammlung) || '—' },
+              { k: 'Versammlung', v: safeText(e.sourceType) === 'GLOBAL_EVENT' ? 'Alle' : safeText(e.versammlung) || '—' },
               { k: 'Saal',        v: safeText(e.saal) || '—' },
               { k: 'Start',       v: formatDateTime(e.start) || '—' },
               { k: 'Ende',        v: e.end ? formatDateTime(e.end) : '—' },
