@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hilfe zum öffentlichen Kalender | JWDarmstadt</title>
+  <meta name="description" content="Hilfe zum öffentlichen JWDarmstadt Kalender und zu den Terminlinks der Versammlungen">
+  <style>
+    :root { --bg:#f5f7fb; --card:#fff; --text:#0f172a; --muted:#475569; --line:#e2e8f0; --hover:#eef2f7; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family:Aptos, Arial, system-ui, sans-serif; }
+    .top { border-bottom:1px solid var(--line); background:rgba(245,247,251,.94); }
+    .top-inner { max-width:980px; margin:auto; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .brand { font-size:20px; font-weight:750; text-decoration:none; }
+    .back { padding:9px 12px; border:1px solid var(--line); border-radius:7px; color:var(--text); text-decoration:none; }
+    .back:hover { background:var(--hover); }
+    main { max-width:940px; margin:20px auto 38px; padding:26px; background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:0 1px 16px rgba(15,23,42,.06); }
+    h1 { margin:0 0 8px; font-size:30px; }
+    h2 { margin:0 0 10px; font-size:23px; }
+    p, li { font-size:17px; line-height:1.58; }
+    .intro { max-width:760px; margin-top:0; color:var(--muted); font-size:18px; }
+    section + section { margin-top:34px; padding-top:28px; border-top:1px solid var(--line); }
+    ol, ul { padding-left:24px; }
+    li + li { margin-top:7px; }
+    .shot-wrap { margin-top:16px; overflow:hidden; border:1px solid var(--line); border-radius:10px; background:#fff; }
+    .shot { display:block; width:calc(100% + 2px); height:auto; margin:-1px; }
+    .caption { margin:7px 2px 0; color:var(--muted); font-size:14px; }
+    .note { padding:14px 16px; border-left:4px solid #64748b; background:#f8fafc; }
+    .direct { display:inline-block; margin-top:8px; padding:10px 13px; border:1px solid var(--line); border-radius:7px; color:var(--text); text-decoration:none; font-weight:650; }
+    .direct:hover { background:var(--hover); }
+    footer { margin-top:30px; color:var(--muted); font-size:14px; }
+    @media (max-width:700px) {
+      .top-inner { padding:12px 14px; }
+      main { margin:10px; padding:18px 16px; border-radius:13px; }
+      h1 { font-size:26px; }
+      h2 { font-size:21px; }
+      p, li { font-size:16px; }
+      .intro { font-size:17px; }
+      .shot-wrap { margin-left:-8px; margin-right:-8px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <a class="brand" href="../">JWDarmstadt</a>
+      <a class="back" href="../">Zum Kalender</a>
+    </div>
+  </header>
+
+  <main>
+    <h1>Hilfe zum öffentlichen Kalender</h1>
+    <p class="intro">Der Kalender zeigt die Saalbelegung, den Schließdienst und besondere Termine. Er ist öffentlich und dient ausschließlich zur Anzeige.</p>
+
+    <section>
+      <h2>Kalender verwenden</h2>
+      <ul>
+        <li><strong>Kalender:</strong> zeigt Zusammenkünfte, Treffpunkte und weitere Einträge in der Monatsansicht.</li>
+        <li><strong>Schließdienst:</strong> zeigt die vergebenen Schließdienste.</li>
+        <li><strong>Termine:</strong> zeigt kommende besondere Termine wie Dienstwochen und Kongresse.</li>
+        <li><strong>Versammlung:</strong> grenzt alle Ansichten auf eine ausgewählte Versammlung ein.</li>
+      </ul>
+      <p>Klicke auf einen Kalendereintrag, um weitere Angaben wie Saal, Beginn, Ende und Terminart zu sehen. Entfallene Zusammenkünfte erscheinen nicht mehr als normaler Termin; verlegte Termine stehen am neuen Zeitpunkt.</p>
+      <a class="direct" href="https://jwdarmstadt.de">Öffentlichen Kalender öffnen</a>
+    </section>
+
+    <section>
+      <h2>Terminlink einer Versammlung erhalten</h2>
+      <p>Bearbeiter finden den passenden Link nach der Anmeldung im Portal oben auf der Seite „Meine Versammlung“.</p>
+      <ol>
+        <li>Öffne <a href="https://portal.jwdarmstadt.de">portal.jwdarmstadt.de</a> und melde dich an.</li>
+        <li>Gehe zu „Meine Versammlung“.</li>
+        <li>Klicke neben dem öffentlichen Terminlink auf „Link kopieren“.</li>
+        <li>Füge den Link in eine Nachricht oder E-Mail ein und gib ihn weiter.</li>
+      </ol>
+      <div class="shot-wrap"><img class="shot" src="bilder/terminlink.png" alt="Terminlink auf der Seite Meine Versammlung mit der Schaltfläche Link kopieren"></div>
+      <p class="caption">Beispiel aus der Testansicht. Nach der Liveschaltung beginnt der Link direkt mit https://jwdarmstadt.de/.</p>
+      <p class="note">Der öffentliche Terminlink gewährt keinen Zugang zum Portal und erlaubt keine Änderungen.</p>
+    </section>
+
+    <section>
+      <h2>So sieht der geöffnete Terminlink aus</h2>
+      <p>Der Link öffnet direkt den Bereich „Termine“. Die zugehörige Versammlung ist bereits ausgewählt. Dadurch sehen Empfänger sofort die passenden besonderen Termine, ohne den Filter selbst einstellen zu müssen.</p>
+      <div class="shot-wrap"><img class="shot" src="bilder/terminansicht.png" alt="Öffentliche Terminansicht mit vorausgewählter Versammlung DA-Russisch"></div>
+      <p class="caption">Beispiel: Terminansicht für DA-Russisch mit vorausgewähltem Versammlungsfilter.</p>
+      <p>Über die Navigation kann anschließend auch zum Kalender oder zum Schließdienst gewechselt werden. Die ausgewählte Versammlung bleibt dabei erhalten.</p>
+    </section>
+
+    <footer>Bereitgestellt durch das IK-Darmstadt.</footer>
+  </main>
+</body>
+</html>
