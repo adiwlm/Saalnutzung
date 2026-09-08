@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Königreichssaal Darmstadt</title>
+  <title>JWDarmstadt</title>
 
   <!-- FullCalendar (CDN) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css">
@@ -615,10 +615,10 @@
       <div class="seg" role="tablist" aria-label="Ansicht">
         <button id="btnCal" class="active" type="button">Kalender</button>
         <button id="btnList" type="button">Schließdienst</button>
-        <button id="btnRes" type="button">Reservierung</button>
-        <button id="btnTerms" type="button" hidden>Termine</button>
+        <button id="btnRes" type="button" hidden>Reservierung</button>
+        <button id="btnTerms" type="button">Termine</button>
       </div>
-      <a id="portalLink" class="portal-link" href="https://portal.jwdarmstadt.de" target="_top" hidden>Portal</a>
+      <a id="portalLink" class="portal-link" href="https://portal.jwdarmstadt.de" target="_top">Portal</a>
     </div>
     <label id="organizationFilterWrap" class="organization-filter">
       Versammlung
@@ -718,8 +718,8 @@
   const $ = (id) => document.getElementById(id);
   const pageParams = new URLSearchParams(window.location.search);
   const isDemo = pageParams.get('demo') === '1';
-  const DEMO_EVENTS_URL = 'https://portal.jwdarmstadt.de/api/public/events';
-  let sharedTermsOrganization = isDemo ? (pageParams.get('termine') || '') : '';
+  const PORTAL_EVENTS_URL = 'https://portal.jwdarmstadt.de/api/public/events';
+  let sharedTermsOrganization = pageParams.get('termine') || '';
   let selectedOrganization = sharedTermsOrganization;
 
   function showStatus(type, msg) {
@@ -914,9 +914,7 @@
 
   async function loadEvents() {
     clearStatus();
-    const url = isDemo
-      ? `${DEMO_EVENTS_URL}?cb=${Date.now()}`
-      : `./events.json?cb=${Date.now()}`;
+    const url = `${PORTAL_EVENTS_URL}?cb=${Date.now()}`;
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`Termine konnten nicht geladen werden (HTTP ${res.status})`);
     const json = await res.json();
@@ -1125,7 +1123,7 @@
     try {
       const isMobile = window.matchMedia('(max-width: 700px)').matches;
       allEventsRaw = await loadEvents();
-      if (isDemo) setupOrganizationFilter(allEventsRaw);
+      setupOrganizationFilter(allEventsRaw);
 
       const calEl = $('calendar');
       calendar = new FullCalendar.Calendar(calEl, {
@@ -1230,8 +1228,8 @@
   });
 
   // ---------- UI wiring ----------
-  if (isDemo) {
-    document.title = 'Königreichssaal Darmstadt – Vorschau';
+  {
+    document.title = isDemo ? 'JWDarmstadt – Vorschau' : 'JWDarmstadt';
     $('btnRes').hidden = true;
     $('btnTerms').hidden = false;
     $('portalLink').hidden = false;
@@ -1251,7 +1249,7 @@
   $('btnRefresh')?.addEventListener('click', async () => {
     try {
       allEventsRaw = await loadEvents();
-      if (isDemo) setupOrganizationFilter(allEventsRaw);
+      setupOrganizationFilter(allEventsRaw);
       calendar.removeAllEvents();
       calendar.addEventSource(buildCalendarEvents(allEventsRaw));
       renderList(allEventsRaw);
