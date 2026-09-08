@@ -13,7 +13,7 @@
   <iframe id="calendarDemo" title="Kalender-Vorschau"></iframe>
   <script>
     const sharedOrganization = new URLSearchParams(window.location.search).get('termine');
-    const params = new URLSearchParams({ demo: '1' });
+    const params = new URLSearchParams({ demo: '1', preview: String(Date.now()) });
     if (sharedOrganization) params.set('termine', sharedOrganization);
     document.getElementById('calendarDemo').src = `../index.html?${params.toString()}`;
   </script>
