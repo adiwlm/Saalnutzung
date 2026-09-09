@@ -66,6 +66,17 @@
     transform: translateX(-50%);
     text-align: center;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .brand-logo {
+    display: block;
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex: 0 0 auto;
   }
 
   .seg {
@@ -612,7 +623,7 @@
 <header>
   <div class="wrap">
     <div class="topbar">
-      <h1>JWDarmstadt</h1>
+      <h1><img class="brand-logo" src="/brand-logo.png" alt="" />JWDarmstadt</h1>
       <div class="seg" role="tablist" aria-label="Ansicht">
         <button id="btnCal" class="active" type="button">Kalender</button>
         <button id="btnList" type="button">Schließdienst</button>
