@@ -9,7 +9,7 @@
   "background_color": "#f5f7fb",
   "theme_color": "#29323a",
   "icons": [
-    { "src": "/pwa-da-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/pwa-da-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    { "src": "/pwa-jwd-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa-jwd-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
   ]
 }

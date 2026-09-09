@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect x="1" y="5" width="62" height="58" rx="5" fill="#29323a"/>
+  <rect x="13" y="1" width="7" height="10" rx="2" fill="#29323a"/>
+  <rect x="44" y="1" width="7" height="10" rx="2" fill="#29323a"/>
+  <text x="31" y="47" text-anchor="middle" fill="#fff" font-family="Arial Black,Arial,sans-serif" font-size="25" font-weight="900" letter-spacing="-2.6">JWD</text>
+  <circle cx="58" cy="56" r="3" fill="#65a9e8"/>
+</svg>
