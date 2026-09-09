@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="DA Kalender">
+  <rect x="2" y="8" width="60" height="54" rx="6" fill="#29323a"/>
+  <rect x="12" y="2" width="9" height="14" rx="3" fill="#29323a" stroke="#182028" stroke-width="1"/>
+  <rect x="43" y="2" width="9" height="14" rx="3" fill="#29323a" stroke="#182028" stroke-width="1"/>
+  <text x="30.5" y="47" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="29" font-weight="900" letter-spacing="-2">DA</text>
+  <circle cx="55" cy="54" r="4.5" fill="#65a9e8"/>
+</svg>
